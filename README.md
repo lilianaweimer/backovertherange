@@ -42,6 +42,7 @@ state so ids stay unique: `sisson-ca`, `lucin-ut`, `denver-co`.
   result, and copy its latitude and longitude in decimal degrees. If the place isn't in
   GNIS, right-click the spot in [OpenStreetMap](https://www.openstreetmap.org) instead and
   set `precision: approximate` if you're unsure. West of Greenwich is negative.
+- `visited` (optional): when you went there yourself, e.g. `2018-07`. Shown as a "Visited" mark on the place.
 - `coords_source`: where the coordinates came from, e.g. `USGS GNIS 1659136`
   (the GNIS feature ID) or `OpenStreetMap`. Shown on the place page.
 - `precision`: `exact`, `approximate` (shown with a dashed outline), or `unknown`.
