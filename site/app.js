@@ -71,7 +71,7 @@ function figure(it, cls = "") {
     <figcaption><strong>${esc(it.title)}</strong>${bits.length ? "<br>" + bits.join(" · ") : ""}</figcaption>
   </figure>`;
 }
-const underConstruction = (what = "") => `<p class="uc-line"><img src="images/under-construction.gif" alt="Under construction" width="200" height="30">${what ? " " + esc(what) : ""}</p>`;
+const underConstruction = (what = "") => `<p class="uc-line"><img src="images/under-construction.gif" alt="Under construction" width="600" height="32">${what ? "<br>" + esc(what) : ""}</p>`;
 // Places added in the last 30 days get a NEW! badge.
 const NEW_DAYS = 30;
 const isNew = (p) => p.added && (Date.now() - new Date(p.added + "T12:00:00")) / 864e5 <= NEW_DAYS;
