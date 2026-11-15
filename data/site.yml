@@ -1,7 +1,19 @@
-# Site-wide settings.
+# Site-wide settings. Edit freely; the check tells you if something is off.
+
+tagline: Mapping the past into the present
+
+# The scrolling line under the header. One item per line.
+marquee:
+  - Welcome, traveler!
+  - "Now mapping: Over the Range to the Golden Gate (1904)"
+  - "Coming soon: The Crest of the Continent (1885)"
+  - Every quote straight from the page
+  - Know a public-domain guide? Write in!
+
+contact_email: hello@backovertherange.com
 
 # Visitor counter (GoatCounter, free, no cookies).
 # 1. Sign up at https://www.goatcounter.com and pick a code, e.g. backovertherange
 # 2. In GoatCounter: Settings -> tick "Allow adding visitor counts on your website"
 # 3. Put the code here, between the quotes. Leave it empty to hide the counter.
-goatcounter: ""
+goatcounter: "coronata"

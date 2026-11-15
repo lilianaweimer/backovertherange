@@ -12,9 +12,17 @@ automatically.
 
 ```
 data/
+  site.yml                         tagline, scrolling marquee, contact email, visitor counter
   guides.yml                       one block per guide edition (wood-1904, ingersoll-1885, ...)
-  places/seattle-wa.md             one file per real place: coordinates, today's status, your notes
-  entries/wood-1904/seattle-wa.md  one file per "this guide talks about this place": page + quote
+  places/lake-tahoe-ca.md          one file per real place: coordinates, today's status, your notes
+  entries/wood-1904/lake-tahoe-ca.md  one file per "this guide talks about this place": page + quote
+  illustrations/karst.yml          one file per illustration collection
+content/
+  about.md                         the About page
+  learn-more.md                    the Learn more page (bibliography)
+site/
+  images/                          engravings, your photos, GIFs
+  index.html, app.js, style.css    the site itself
 templates/
   place.md                         copy these to start a new file
   entry.md
@@ -22,10 +30,21 @@ templates/
 
 A place can have entries from many guides. Denver, for example, can have
 `entries/wood-1904/denver-co.md` and `entries/ingersoll-1885/denver-co.md`;
-both show up together when you click Denver on the map.
+both show up together on Denver's page.
 
-The three example places (Seattle, Los Angeles, Denver) use fragments quoted
-in the Keystone. They are marked EXAMPLE. Overwrite or delete them.
+## Editing the site's words
+
+All the text on the site lives in plain files, so you never need to touch the HTML:
+
+- **Tagline, marquee, contact email:** `data/site.yml`.
+- **About and Learn more:** `content/about.md` and `content/learn-more.md`.
+  `{{guides}}` on Learn more becomes a list of every guide in `data/guides.yml`.
+  Markdown; each `## Heading` becomes a section with its own link
+  (`#/about/contact` jumps to the Contact section).
+- **A guide's page:** `summary`, `kind`, `covers` and `color` in `data/guides.yml`.
+  `color` is that guide's map marker color. Places in more than one guide are grey.
+- **An illustration collection's intro:** `intro` in `data/illustrations/<collection>.yml`.
+- **Colors and fonts:** the variables at the top of `site/style.css`.
 
 ## Adding data
 
@@ -50,12 +69,19 @@ state so ids stay unique: `sisson-ca`, `lucin-ut`, `denver-co`.
   `ghost-town`, `gone`, or `unknown`.
 - `category`: `town`, `depot`, `natural-feature`, `building`, `resort`,
   `mine`, `route`, or `other`.
+- `photos` (optional): your own photos. Upload them to `site/images/`, then list
+  them: `photos: [{file: tahoe-2018.jpg, caption: "South shore, July 2018"}]`.
 - Below the second `---`, write whatever you know about the place today.
   Markdown works, including links to sources.
 
 **A new entry:** copy `templates/entry.md` to
 `data/entries/<guide-id>/<place-id>.md`, fill in `page` and the other lines,
 and paste the guide's words below the second `---`.
+
+**Illustrations:** upload the image to `site/images/`, then add an item to the
+collection's file in `data/illustrations/` (see the example in `karst.yml`).
+Give it a `place:` and it also shows on that place's page and in its map popup.
+A new collection is a new `.yml` file in the same folder.
 
 You can do all of this on github.com: open a folder, choose **Add file →
 Create new file**, paste, and **Commit changes**. Or work in any text editor
@@ -138,16 +164,18 @@ Leave it empty and the counter stays hidden.
 
 ## How the site is built
 
-- `site/` holds the page itself: `index.html`, `style.css`, `app.js`. The map
-  is [Leaflet](https://leafletjs.com) on OpenStreetMap tiles; no accounts or
-  keys.
+- `site/` holds the page itself: `index.html`, `style.css`, `app.js`. It is
+  one page; the part after `#` picks what to show (`#/place/lake-tahoe-ca`,
+  `#/guide/wood-1904`, `#/compare`, `#/about`). The map is
+  [Leaflet](https://leafletjs.com) on OpenStreetMap tiles; no accounts or keys.
 - `scripts/build.py` reads `data/`, checks everything, and writes
   `dist/data.json` next to a copy of `site/`.
 - `.github/workflows/site.yml` runs the build and publishes `dist/` to
   GitHub Pages.
 
 To add a status or category, add it to the lists at the top of
-`scripts/build.py`, and give a new status a color and label in `site/app.js`.
+`scripts/build.py`, and give a status a label in `site/app.js` (`STATUS_LABELS`).
+Kinds of book need no setup: write any `kind:` in `data/guides.yml` and the site groups by it.
 
 ## Finding more guides
 

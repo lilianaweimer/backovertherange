@@ -1,6 +1,11 @@
 # One block per guide EDITION you read from.
 # The `id` is what entry files use in their `guide:` line.
 # Keep ids short: author-year, e.g. wood-1904, baedeker-1909.
+#
+# kind:  what sort of book, in your own words, e.g. Railroad guide, Road guide,
+#        Travelogue, Route 66 guide. Same words = grouped together on the site.
+# color: the map marker color for this guide, like #4B5632 (from the cover)
+# summary: a few factual sentences for the guide's page (Markdown works)
 
 - id: wood-1904
   title: "Over the Range to the Golden Gate: A Complete Tourist's Guide to Colorado, New Mexico, Utah, Nevada, California, Oregon, Puget Sound, and the Great North-West"
@@ -9,7 +14,14 @@
   year: 1904
   first_published: 1889
   publisher: R. R. Donnelley & Sons Co., Chicago
-  scan_url: ""   # paste an Internet Archive or HathiTrust link here
+  kind: Railroad guide
+  color: "#4B5632"
+  covers: Colorado to Puget Sound
+  scan_url: ""        # Internet Archive link
+  hathitrust_url: ""  # optional
+  summary: >
+    A route-by-route guide: each section follows a rail line and describes its
+    depots, towns and sights in turn.
   notes: Later editions appear to have been edited by S. K. Hooper alone.
 
 - id: ingersoll-1885
@@ -19,5 +31,12 @@
   year: 1885
   first_published: 1885
   publisher: R. R. Donnelley & Sons Co., Chicago
+  kind: Travelogue
+  color: "#5A231D"
+  covers: Colorado and the Rockies
   scan_url: ""
+  hathitrust_url: ""
+  summary: >
+    An account of a summer's trip through the Rocky Mountains, published by
+    the same Chicago printer as Over the Range.
   notes: Travelogue promoting the Denver & Rio Grande Railroad.
