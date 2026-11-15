@@ -13,9 +13,9 @@ automatically.
 ```
 data/
   site.yml                         tagline, scrolling marquee, contact email, visitor counter
-  guides.yml                       one block per guide edition (wood-1904, ingersoll-1885, ...)
+  guides.yml                       one block per guide edition (wood-1889, ingersoll-1885, ...)
   places/lake-tahoe-ca.md          one file per real place: coordinates, today's status, your notes
-  entries/wood-1904/lake-tahoe-ca.md  one file per "this guide talks about this place": page + quote
+  entries/wood-1889/lake-tahoe-ca.md  one file per "this guide talks about this place": page + quote
   illustrations/karst.yml          one file per illustration collection
 content/
   about.md                         the About page
@@ -29,7 +29,7 @@ templates/
 ```
 
 A place can have entries from many guides. Denver, for example, can have
-`entries/wood-1904/denver-co.md` and `entries/ingersoll-1885/denver-co.md`;
+`entries/wood-1889/denver-co.md` and `entries/ingersoll-1885/denver-co.md`;
 both show up together on Denver's page.
 
 ## Editing the site's words
@@ -103,7 +103,7 @@ you) and the live site stays as it was. Click the ✗, then **Details**, to read
 messages like:
 
 ```
-data/entries/wood-1904/sisson-ca.md: place 'sisson-ca' has no file. Create data/places/sisson-ca.md (copy templates/place.md).
+data/entries/wood-1889/sisson-ca.md: place 'sisson-ca' has no file. Create data/places/sisson-ca.md (copy templates/place.md).
 ```
 
 If it passes (green ✓), the site updates in a minute or two.
@@ -166,7 +166,7 @@ Leave it empty and the counter stays hidden.
 
 - `site/` holds the page itself: `index.html`, `style.css`, `app.js`. It is
   one page; the part after `#` picks what to show (`#/place/lake-tahoe-ca`,
-  `#/guide/wood-1904`, `#/compare`, `#/about`). The map is
+  `#/guide/wood-1889`, `#/compare`, `#/about`). The map is
   [Leaflet](https://leafletjs.com) on OpenStreetMap tiles; no accounts or keys.
 - `scripts/build.py` reads `data/`, checks everything, and writes
   `dist/data.json` next to a copy of `site/`.
