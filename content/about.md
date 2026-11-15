@@ -1,6 +1,7 @@
 <!--
 This is the About page. Edit freely: it's Markdown.
 Each "## Heading" becomes a section, and gets a link in the page's side menu.
+{{contact_email}} is filled in from data/site.yml.
 -->
 
 # About
@@ -56,7 +57,7 @@ Public Library, which led to an undergraduate study of two of these guides.
 ## Contact
 
 Know something about one of these places, spot a mistake, or have a guide to
-suggest? Write to [hello@backovertherange.com](mailto:hello@backovertherange.com).
+suggest? Write to [{{contact_email}}](mailto:{{contact_email}}).
 
 ## Reuse and corrections
 

@@ -230,7 +230,12 @@ function showMap(params) {
   }
   const visible = DATA.places.filter(matches);
   if (params.get("guide") && visible.length) map.fitBounds(L.latLngBounds(visible.map((p) => [p.lat, p.lon])).pad(0.2), { maxZoom: 9 });
-  if (params.get("place")) setTimeout(() => showOnMap(params.get("place")), 50);
+  const want = params.get("place");
+  if (want && places[want]) {
+    // If the current filters hide this place, clear them so its marker is back on the map.
+    if (!matches(places[want])) { $("clear").click(); }
+    setTimeout(() => showOnMap(want), 50);
+  }
 }
 
 // ---- Pages ---------------------------------------------------------------------
@@ -412,7 +417,8 @@ function comparePage(params) {
   };
   const today = (p) => `${statusBadge(p)} ${p.status_summary ? esc(p.status_summary) : ""}`;
   const gA = guides[a];
-  const pages = rows.map((p) => p.entries.find((e) => e.guide === a)).filter(Boolean).map((e) => firstNum(e.page)).filter(Boolean);
+  const rowsA = rows.filter(inA);
+  const pages = rowsA.map((p) => p.entries.find((e) => e.guide === a)).filter(Boolean).map((e) => firstNum(e.page)).filter(Boolean);
 
   return `
     <h1>Then and now</h1>
@@ -435,7 +441,7 @@ function comparePage(params) {
       </section>
       <section class="panel">
         <h2>In the guides</h2>
-        <p>${plural(rows.length, "place")}${pages.length ? ` · ${esc(pageRef(Math.min(...pages) === Math.max(...pages) ? String(pages[0]) : `${Math.min(...pages)}-${Math.max(...pages)}`))}` : ""} · <i>${esc(gA.short_title)}</i>, ${esc(gA.year)}</p>
+        <p>${plural(rowsA.length, "place")}${pages.length ? ` · ${esc(pageRef(Math.min(...pages) === Math.max(...pages) ? String(pages[0]) : `${Math.min(...pages)}-${Math.max(...pages)}`))}` : ""} · <i>${esc(gA.short_title)}</i>, ${esc(gA.year)}</p>
         <p class="meta">Counts come straight from the entries; nothing here is written by hand.</p>
       </section>
     </div>
@@ -545,6 +551,12 @@ function route() {
 
 // Page interactions that need JavaScript.
 document.addEventListener("click", (ev) => {
+  if (ev.target.closest(".skip")) {
+    // Jump to the content without changing the address (the router owns the #).
+    ev.preventDefault();
+    $("view").focus();
+    return;
+  }
   const copy = ev.target.closest("[data-copy]");
   if (copy) {
     const text = copy.dataset.copy;

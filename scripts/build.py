@@ -349,14 +349,17 @@ def load_illustrations(guides, places):
     return collections
 
 
-def load_pages():
+def load_pages(site):
+    """The About and Learn more pages. {{contact_email}} is replaced with the address in data/site.yml."""
     pages = {}
     for name in ("about", "learn-more"):
         path = CONTENT / f"{name}.md"
         if not path.exists():
             problem(path, "this page's text file is missing.")
             continue
-        pages[name] = page_html(path.read_text(encoding="utf-8").strip())
+        text = path.read_text(encoding="utf-8").strip()
+        text = text.replace("{{contact_email}}", site["contact_email"])
+        pages[name] = page_html(text)
     return pages
 
 
@@ -367,7 +370,7 @@ def main():
     places = load_places()
     n_entries = load_entries(guides, places)
     collections = load_illustrations(guides, places)
-    pages = load_pages()
+    pages = load_pages(site)
 
     for place in places.values():
         place["entries"].sort(key=lambda e: (guides[e["guide"]]["year"], e["guide"]))
