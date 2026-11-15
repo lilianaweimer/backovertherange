@@ -1,0 +1,7 @@
+# Site-wide settings.
+
+# Visitor counter (GoatCounter, free, no cookies).
+# 1. Sign up at https://www.goatcounter.com and pick a code, e.g. backovertherange
+# 2. In GoatCounter: Settings -> tick "Allow adding visitor counts on your website"
+# 3. Put the code here, between the quotes. Leave it empty to hide the counter.
+goatcounter: ""

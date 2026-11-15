@@ -5,6 +5,7 @@
     python scripts/build.py --check   # check only, write nothing
 
 Reads:
+    data/site.yml         site-wide settings (visitor counter)
     data/guides.yml
     data/places/<place-id>.md
     data/entries/<guide-id>/<place-id>.md
@@ -20,6 +21,7 @@ import datetime
 import json
 import re
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -166,6 +168,7 @@ def load_places():
             "status_summary": plain(fields.get("status_summary")),
             "former_names": as_list(fields.get("former_names")),
             "visited": plain(fields.get("visited")),
+            "coords_source": plain(fields.get("coords_source")),
             "tags": [t.lower() for t in as_list(fields.get("tags"))],
             "notes_html": to_html(body),
             "entries": [],
@@ -205,8 +208,40 @@ def load_entries(guides, places):
     return count
 
 
+def load_site_settings():
+    path = DATA / "site.yml"
+    if not path.exists():
+        return {"goatcounter": ""}
+    try:
+        fields = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError:
+        problem(path, "this file isn't valid YAML. Check the quotes around the code.")
+        return {"goatcounter": ""}
+    code = plain(fields.get("goatcounter")).strip().lower()
+    if code.endswith(".goatcounter.com"):
+        code = code[: -len(".goatcounter.com")]
+    code = code.replace("https://", "").replace("http://", "")
+    if code and not ID_PATTERN.match(code):
+        problem(path, f"goatcounter should be just the code, like backovertherange (got '{code}').")
+        code = ""
+    return {"goatcounter": code}
+
+
+def last_updated():
+    """Date of the latest commit, or today if git isn't available."""
+    try:
+        out = subprocess.run(["git", "log", "-1", "--format=%cs"], cwd=ROOT,
+                             capture_output=True, text=True, check=True).stdout.strip()
+        if out:
+            return out
+    except (OSError, subprocess.CalledProcessError):
+        pass
+    return datetime.date.today().isoformat()
+
+
 def main():
     check_only = "--check" in sys.argv
+    site = load_site_settings()
     guides = load_guides()
     places = load_places()
     n_entries = load_entries(guides, places)
@@ -234,6 +269,8 @@ def main():
     shutil.copytree(SITE, DIST)
     out = {
         "built": datetime.date.today().isoformat(),
+        "updated": last_updated(),
+        "site": site,
         "guides": list(guides.values()),
         "places": list(places.values()),
     }

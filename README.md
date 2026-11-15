@@ -36,8 +36,15 @@ in the Keystone. They are marked EXAMPLE. Overwrite or delete them.
 The file name is the place's id. Use lowercase and dashes, and add the
 state so ids stay unique: `sisson-ca`, `lucin-ut`, `denver-co`.
 
-- `lat` / `lon`: right-click the spot in [OpenStreetMap](https://www.openstreetmap.org)
-  or Google Maps and copy the two numbers. West of Greenwich is negative.
+- `lat` / `lon`: where possible, use the official point from the USGS
+  [Geographic Names Information System (GNIS)](https://edits.nationalmap.gov/apps/gaz-domestic/public/search/names),
+  so a big place like "San Francisco" is always the same spot. Search the name, open the
+  result, and copy its latitude and longitude in decimal degrees. If the place isn't in
+  GNIS, right-click the spot in [OpenStreetMap](https://www.openstreetmap.org) instead and
+  set `precision: approximate` if you're unsure. West of Greenwich is negative.
+- `visited` (optional): when you went there yourself, e.g. `2018-07`. Shown as a "Visited" mark on the place.
+- `coords_source`: where the coordinates came from, e.g. `USGS GNIS 1659136`
+  (the GNIS feature ID) or `OpenStreetMap`. Shown on the place page.
 - `precision`: `exact`, `approximate` (shown with a dashed outline), or `unknown`.
 - `status`: `thriving`, `transformed`, `renamed`, `absorbed`, `declined`,
   `ghost-town`, `gone`, or `unknown`.
@@ -117,6 +124,17 @@ check without building.
 
 See GitHub's guide to
 [managing a custom domain](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site).
+
+## Visitor counter
+
+The footer shows "You are visitor no. 001234" once a counter code is set, plus a
+"Last updated" date that comes from the latest change in this repository.
+
+1. Sign up at [goatcounter.com](https://www.goatcounter.com) (free for personal sites, no cookies) and pick a code, e.g. `backovertherange`.
+2. In GoatCounter, open Settings and tick **Allow adding visitor counts on your website**.
+3. Put the code in `data/site.yml`: `goatcounter: "backovertherange"`.
+
+Leave it empty and the counter stays hidden.
 
 ## How the site is built
 

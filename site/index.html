@@ -15,17 +15,16 @@
 <body>
   <header class="masthead">
     <h1>Back Over the Range</h1>
-    <p class="tagline">What the old guidebooks said, and what is there now.</p>
+    <p class="tagline">Mapping the past into the present</p>
     <button id="about-toggle" class="link-button" aria-expanded="false" aria-controls="about">About</button>
   </header>
 
   <section id="about" class="about" hidden>
-    <p>Entries are transcribed by hand from public-domain travel guides, mostly nineteenth-century
+    <p>Entries are transcribed by hand from public-domain travel guides, starting with
       railroad guides to the American West. Each place shows what each guide said about it, with
-      page numbers, and, where known, what the place is like today.</p>
-    <p>The project began with an undergraduate thesis following Stanley Wood's
-      <em>Over the Range to the Golden Gate</em> and Ernest Ingersoll's
-      <em>The Crest of the Continent</em> by car, from Squamish to Los Angeles to Denver.</p>
+      page numbers, and, where known, short sourced facts about the place today.</p>
+    <p>This is a record of what old books said, not a travel guide. Locations may be approximate,
+      and some places are on private land, closed or gone. Check before you go.</p>
   </section>
 
   <main class="layout">
@@ -49,6 +48,11 @@
     </aside>
     <div id="map" class="map" role="region" aria-label="Map of places"></div>
   </main>
+
+  <footer class="site-foot">
+    <span id="visitors" hidden>You are visitor no. <span id="visitor-digits" class="counter"></span></span>
+    <span id="updated"></span>
+  </footer>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
