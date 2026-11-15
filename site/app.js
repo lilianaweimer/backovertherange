@@ -161,6 +161,7 @@ fetch("data.json")
   .then((r) => r.json())
   .then((data) => {
     DATA = data;
+    showFooter(data);
     guidesById = Object.fromEntries(data.guides.map((g) => [g.id, g]));
     for (const p of data.places) markersById[p.id] = makeMarker(p);
 
@@ -192,6 +193,34 @@ fetch("data.json")
   .catch((err) => {
     $("list").innerHTML = `<li class="meta" style="padding:16px">Could not load the data (${esc(err.message)}). If you opened index.html directly, run the local preview instead (see README).</li>`;
   });
+
+// ---- Footer: last updated and visitor counter ------------------------------
+
+function showFooter(data) {
+  if (data.updated) {
+    const d = new Date(data.updated + "T12:00:00");
+    $("updated").textContent = "Last updated " + d.toLocaleDateString("en-US");
+  }
+  const code = data.site && data.site.goatcounter;
+  if (!code) return;
+  const base = `https://${code}.goatcounter.com`;
+  // Count this visit.
+  const s = document.createElement("script");
+  s.async = true;
+  s.src = "https://gc.zgo.at/count.js";
+  s.dataset.goatcounter = base + "/count";
+  document.body.appendChild(s);
+  // Show the running total for the whole site.
+  fetch(base + "/counter/TOTAL.json")
+    .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+    .then((res) => {
+      const digits = String(res.count || "").replace(/\D/g, "");
+      if (!digits) return;
+      $("visitor-digits").innerHTML = digits.padStart(6, "0").split("").map((c) => `<span>${c}</span>`).join("");
+      $("visitors").hidden = false;
+    })
+    .catch(() => {}); // counter is decoration; never break the map over it
+}
 
 $("about-toggle").addEventListener("click", (ev) => {
   const about = $("about");

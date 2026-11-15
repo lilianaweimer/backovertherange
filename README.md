@@ -118,6 +118,17 @@ check without building.
 See GitHub's guide to
 [managing a custom domain](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site).
 
+## Visitor counter
+
+The footer shows "You are visitor no. 001234" once a counter code is set, plus a
+"Last updated" date that comes from the latest change in this repository.
+
+1. Sign up at [goatcounter.com](https://www.goatcounter.com) (free for personal sites, no cookies) and pick a code, e.g. `backovertherange`.
+2. In GoatCounter, open Settings and tick **Allow adding visitor counts on your website**.
+3. Put the code in `data/site.yml`: `goatcounter: "backovertherange"`.
+
+Leave it empty and the counter stays hidden.
+
 ## How the site is built
 
 - `site/` holds the page itself: `index.html`, `style.css`, `app.js`. The map
