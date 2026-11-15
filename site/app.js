@@ -67,7 +67,7 @@ function figure(it, cls = "") {
   const g = guides[it.guide];
   const bits = [g ? `<i>${esc(g.short_title)}</i>` : "", pageRef(it.page), it.material, it.artist].filter(Boolean);
   return `<figure class="illus ${cls}">
-    ${it.src ? `<img src="${esc(it.src)}" alt="${esc(it.title)}" loading="lazy">` : `<div class="img-missing">Image coming soon</div>`}
+    ${it.src ? `<img src="${esc(it.src)}" alt="${esc(it.title)}" loading="lazy">` : `<div class="img-missing">WIP</div>`}
     <figcaption><strong>${esc(it.title)}</strong>${bits.length ? "<br>" + bits.join(" <span class=sep>·</span> ") : ""}</figcaption>
   </figure>`;
 }
@@ -359,7 +359,7 @@ function guidePage(id) {
         ${subtitle ? `<p class="subtitle">${esc(subtitle)}</p>` : ""}
         <p class="meta-line">${[g.author, g.publisher, g.year && `${g.year} edition`, g.first_published && g.first_published !== g.year ? `first published ${g.first_published}` : ""].filter(Boolean).map(esc).join(" <span class=sep>·</span> ")}</p>
         <p class="buttons">
-          ${g.scan_url ? `<a class="btn" href="${esc(g.scan_url)}" target="_blank" rel="noopener">Read it on the Internet Archive ↗</a>` : `<span class="btn disabled">Scan link coming soon</span>`}
+          ${g.scan_url ? `<a class="btn" href="${esc(g.scan_url)}" target="_blank" rel="noopener">Read it on the Internet Archive ↗</a>` : `<span class="btn disabled">Scan link: WIP</span>`}
           ${g.hathitrust_url ? `<a class="btn" href="${esc(g.hathitrust_url)}" target="_blank" rel="noopener">HathiTrust ↗</a>` : ""}
           <a class="btn" href="#/?guide=${esc(g.id)}">Show its places on the map</a>
         </p>
@@ -447,7 +447,7 @@ function illustrationsPage() {
     <p class="lede">Engravings, maps and other illustrations from the guides, grouped by collection. Each illustration is linked to the place it shows, so it also appears on that place’s page and in its map popup.</p>
     <section class="cards">${DATA.illustrations.map((c) => `
       <a class="card" href="#/illustrations/${esc(c.id)}">
-        ${c.cover ? `<img src="${esc(c.cover)}" alt="">` : (c.items.find((it) => it.src) ? `<img src="${esc(c.items.find((it) => it.src).src)}" alt="">` : `<div class="img-missing">Image coming soon</div>`)}
+        ${c.cover ? `<img src="${esc(c.cover)}" alt="">` : (c.items.find((it) => it.src) ? `<img src="${esc(c.items.find((it) => it.src).src)}" alt="">` : `<div class="img-missing">WIP</div>`)}
         <h2>${esc(c.title)}</h2>
         <p class="meta">${[plural(c.items.length, "item"), c.holding, c.dates].filter(Boolean).map(esc).join(" <span class=sep>·</span> ")}</p>
       </a>`).join("") || underConstruction("Collections are being added.")}
