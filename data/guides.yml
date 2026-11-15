@@ -2,7 +2,8 @@
 # The `id` is what entry files use in their `guide:` line.
 # Keep ids short: author-year, e.g. wood-1904, baedeker-1909.
 #
-# kind:  railroad | road | handbook | travelogue | government | other
+# kind:  what sort of book, in your own words, e.g. Railroad guide, Road guide,
+#        Travelogue, Route 66 guide. Same words = grouped together on the site.
 # color: the map marker color for this guide, like #4B5632 (from the cover)
 # summary: a few factual sentences for the guide's page (Markdown works)
 
@@ -13,7 +14,7 @@
   year: 1904
   first_published: 1889
   publisher: R. R. Donnelley & Sons Co., Chicago
-  kind: railroad
+  kind: Railroad guide
   color: "#4B5632"
   covers: Colorado to Puget Sound
   scan_url: ""        # Internet Archive link
@@ -30,7 +31,7 @@
   year: 1885
   first_published: 1885
   publisher: R. R. Donnelley & Sons Co., Chicago
-  kind: travelogue
+  kind: Travelogue
   color: "#5A231D"
   covers: Colorado and the Rockies
   scan_url: ""

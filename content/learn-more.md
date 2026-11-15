@@ -1,6 +1,7 @@
 <!--
 The Learn more page (bibliography). Markdown: "## Heading" starts a group,
 "- " starts an entry, *asterisks* for italics.
+{{guides}} is filled in with every guide in data/guides.yml.
 -->
 
 # Learn more
@@ -12,8 +13,7 @@ list of standard works.
 
 ## The guides
 
-- Ingersoll, Ernest. *The Crest of the Continent.* Chicago: R. R. Donnelley & Sons Co., 1885.
-- Wood, Stanley. *Over the Range to the Golden Gate.* Chicago: R. R. Donnelley & Sons Co., 1904.
+{{guides}}
 
 ## Railroads, tourism and the West
 

@@ -38,11 +38,10 @@ CONTENT = ROOT / "content"
 IMAGES = SITE / "images"
 
 # The fixed lists. Add a value here if you need a new one; the map colors
-# labels in site/app.js (STATUS_LABELS, KIND_LABELS).
+# labels in site/app.js (STATUS_LABELS).
 CATEGORIES = {"town", "depot", "natural-feature", "building", "resort", "mine", "route", "other"}
 STATUSES = {"thriving", "transformed", "renamed", "absorbed", "declined", "ghost-town", "gone", "unknown"}
 PRECISIONS = {"exact", "approximate", "unknown"}
-KINDS = {"railroad", "road", "handbook", "travelogue", "government", "other"}
 COLOR_PATTERN = re.compile(r"^#[0-9a-fA-F]{6}$")
 
 ID_PATTERN = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
@@ -127,9 +126,9 @@ def load_guides():
         for field in ("title", "author", "year"):
             if not plain(g.get(field)):
                 problem(path, f"{gid}: '{field}' is missing.")
-        kind = plain(g.get("kind")) or "other"
-        if kind not in KINDS:
-            problem(path, f"{gid}: kind '{kind}' should be one of: {', '.join(sorted(KINDS))}.")
+        # Any words you like, e.g. "Railroad guide" or "Route 66 guide". Guides with
+        # the same kind are grouped together, so spell it the same way each time.
+        kind = plain(g.get("kind")) or "Other"
         color = plain(g.get("color"))
         if color and not COLOR_PATTERN.match(color):
             problem(path, f"{gid}: color '{color}' should look like #9C2A1F (a # and six letters or numbers).")
@@ -349,8 +348,20 @@ def load_illustrations(guides, places):
     return collections
 
 
-def load_pages(site):
-    """The About and Learn more pages. {{contact_email}} is replaced with the address in data/site.yml."""
+def guide_list_markdown(guides):
+    """The list of guides for {{guides}} on the Learn more page, from data/guides.yml."""
+    lines = []
+    for g in sorted(guides.values(), key=lambda g: (g["author"].split()[-1:], g["year"])):
+        parts = g["author"].split()
+        name = f"{parts[-1]}, {' '.join(parts[:-1])}" if len(parts) > 1 else g["author"]
+        pub = ", ".join(x for x in (g["publisher"], g["year"]) if x)
+        lines.append(f"- {name}. [*{g['short_title']}*](#/guide/{g['id']}). {pub}.")
+    return "\n".join(lines)
+
+
+def load_pages(site, guides):
+    """The About and Learn more pages.
+    {{contact_email}} becomes the address in data/site.yml; {{guides}} becomes a list of every guide."""
     pages = {}
     for name in ("about", "learn-more"):
         path = CONTENT / f"{name}.md"
@@ -359,6 +370,7 @@ def load_pages(site):
             continue
         text = path.read_text(encoding="utf-8").strip()
         text = text.replace("{{contact_email}}", site["contact_email"])
+        text = text.replace("{{guides}}", guide_list_markdown(guides))
         pages[name] = page_html(text)
     return pages
 
@@ -370,7 +382,7 @@ def main():
     places = load_places()
     n_entries = load_entries(guides, places)
     collections = load_illustrations(guides, places)
-    pages = load_pages(site)
+    pages = load_pages(site, guides)
 
     for place in places.values():
         place["entries"].sort(key=lambda e: (guides[e["guide"]]["year"], e["guide"]))

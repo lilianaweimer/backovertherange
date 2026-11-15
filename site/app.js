@@ -19,22 +19,6 @@ const STATUS_LABELS = {
   gone: "Gone",
   unknown: "Unknown",
 };
-const KIND_LABELS = {
-  railroad: "Railroad guide",
-  road: "Road and auto guide",
-  handbook: "General handbook",
-  travelogue: "Travelogue",
-  government: "Government guide",
-  other: "Other",
-};
-const KIND_PLURALS = {
-  railroad: "Railroad guides",
-  road: "Road and auto guides",
-  handbook: "General handbooks",
-  travelogue: "Travelogues",
-  government: "Government guides",
-  other: "Other books",
-};
 
 // ---- Small helpers ---------------------------------------------------------
 
@@ -56,6 +40,7 @@ const coordText = (p) => `${Math.abs(p.lat).toFixed(2)}° ${p.lat >= 0 ? "N" : "
 
 let DATA, guides = {}, places = {}, collections = {};
 
+function kindsInUse() { return [...new Set(DATA.guides.map((g) => g.kind))].sort((a, b) => a.localeCompare(b)); }
 function guideColor(g) { return g.color || FALLBACK_COLORS[DATA.guides.indexOf(g) % FALLBACK_COLORS.length]; }
 function placeGuides(p) { return [...new Set(p.entries.map((e) => e.guide))]; }
 function placeColor(p) {
@@ -149,8 +134,7 @@ function fillSelect(id, pairs) {
 }
 
 function setUpFilters() {
-  const kinds = [...new Set(DATA.guides.map((g) => g.kind))];
-  fillSelect("f-kind", Object.keys(KIND_LABELS).filter((k) => kinds.includes(k)).map((k) => [k, KIND_LABELS[k]]));
+  fillSelect("f-kind", kindsInUse().map((k) => [k, k]));
   fillSelect("f-guide", DATA.guides.map((g) => [g.id, `${g.short_title} (${g.year})`]));
   fillSelect("f-status", Object.entries(STATUS_LABELS));
   fillSelect("f-tag", [...new Set(DATA.places.flatMap((p) => p.tags))].sort().map((t) => [t, label(t)]));
@@ -341,9 +325,9 @@ function guidesPage() {
   return `
     <h1>Guides</h1>
     <p class="lede">The books on the map, by kind. Each guide is in the US public domain and links to a full scan.</p>
-    ${Object.keys(KIND_LABELS).filter((k) => byKind[k]).map((k) => `
+    ${kindsInUse().map((k) => `
       <section class="panel">
-        <h2>${esc(KIND_PLURALS[k])}</h2>
+        <h2>${esc(k)}</h2>
         <ul class="guide-list">${byKind[k].sort((a, b) => a.year - b.year).map((g) => `<li>
           ${dot(guideColor(g))}<a href="#/guide/${esc(g.id)}"><i>${esc(g.short_title)}</i></a>, ${esc(g.author)}, ${esc(g.year)}
           <span class="meta">· ${plural(placesIn(g.id).length, "place")}${g.covers ? " · " + esc(g.covers) : ""}</span></li>`).join("")}</ul>
@@ -363,9 +347,9 @@ function guidePage(id) {
   const shared = [...new Set(DATA.illustrations.flatMap((c) => c.items.filter((it) => it.guide === id).map(() => c.id)))]
     .map((cid) => collections[cid]);
   return `
-    ${crumbs(["Guides", "#/guides"], [KIND_PLURALS[g.kind], "#/guides"], [g.short_title])}
+    ${crumbs(["Guides", "#/guides"], [g.kind, "#/guides"], [g.short_title])}
     <div class="guide-head">
-      <div class="cover">${dot(guideColor(g))}<span>${esc(KIND_LABELS[g.kind])}</span></div>
+      <div class="cover">${dot(guideColor(g))}<span>${esc(g.kind)}</span></div>
       <div>
         <h1><i>${esc(g.short_title)}</i></h1>
         ${subtitle ? `<p class="subtitle">${esc(subtitle)}</p>` : ""}
@@ -386,7 +370,7 @@ function guidePage(id) {
       <section class="panel">
         <h2>At a glance</h2>
         <dl class="glance">
-          <dt>Kind of book</dt><dd>${esc(KIND_LABELS[g.kind])}</dd>
+          <dt>Kind of book</dt><dd>${esc(g.kind)}</dd>
           ${g.covers ? `<dt>Covers</dt><dd>${esc(g.covers)}</dd>` : ""}
           <dt>Places on the map</dt><dd>${list.length}</dd>
           <dt>Map color</dt><dd>${dot(guideColor(g))}${esc(guideColor(g))}</dd>

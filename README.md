@@ -38,6 +38,7 @@ All the text on the site lives in plain files, so you never need to touch the HT
 
 - **Tagline, marquee, contact email:** `data/site.yml`.
 - **About and Learn more:** `content/about.md` and `content/learn-more.md`.
+  `{{guides}}` on Learn more becomes a list of every guide in `data/guides.yml`.
   Markdown; each `## Heading` becomes a section with its own link
   (`#/about/contact` jumps to the Contact section).
 - **A guide's page:** `summary`, `kind`, `covers` and `color` in `data/guides.yml`.
@@ -172,8 +173,9 @@ Leave it empty and the counter stays hidden.
 - `.github/workflows/site.yml` runs the build and publishes `dist/` to
   GitHub Pages.
 
-To add a status, category or kind of book, add it to the lists at the top of
-`scripts/build.py`, and give it a label in `site/app.js` (`STATUS_LABELS`, `KIND_LABELS`).
+To add a status or category, add it to the lists at the top of
+`scripts/build.py`, and give a status a label in `site/app.js` (`STATUS_LABELS`).
+Kinds of book need no setup: write any `kind:` in `data/guides.yml` and the site groups by it.
 
 ## Finding more guides
 
