@@ -1,0 +1,24 @@
+# One file per illustration collection. The file name is its id.
+title: The Karst engravings
+holding: Denver Public Library, Western History Collection, WH1337
+dates: 1880s
+cover:          # an image file in site/images/ for the collection card
+intro: >
+  The Denver Public Library's Western History collection holds 99 original plates
+  and electrotypes from the 1880s (collection WH1337). They were catalogued as
+  Ingersoll's *The Crest of the Continent* (1885), but some also appear in Wood's
+  *Over the Range to the Golden Gate* (1889), from the same publisher. Many are
+  signed by the engraver Karst.
+
+# One block per illustration. Only title is required.
+# file:     image in site/images/
+# guide:    guide id from data/guides.yml
+# place:    place id; the illustration then shows on that place and in its map popup
+items: []
+#  - title: Garden of the Gods
+#    file: karst-garden-of-the-gods.jpg
+#    guide: ingersoll-1885
+#    page: 53
+#    place: garden-of-the-gods-co
+#    material: wood
+#    artist: Karst
