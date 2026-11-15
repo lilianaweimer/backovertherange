@@ -200,6 +200,8 @@ details summary { font: 600 15px var(--heading); cursor: pointer; }
 .guide-list { list-style: none; padding: 0; margin: 0; }
 .guide-list li { padding: 6px 0; border-bottom: 1px solid var(--rule-soft); }
 .page-order { margin: 0; padding-left: 1.5em; }
+.read-more ul { margin: 0; padding-left: 1.2em; }
+.read-more li { margin-bottom: 6px; }
 .guide-head { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 24px; margin-bottom: 18px; }
 .guide-head:not(:has(.cover)) { grid-template-columns: minmax(0, 1fr) minmax(220px, 340px); }
 .guide-head .cover {

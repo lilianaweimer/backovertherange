@@ -7,6 +7,10 @@
 #        Travelogue, Route 66 guide. Same words = grouped together on the site.
 # color: the map marker color for this guide, like #4B5632 (from the cover)
 # summary: a few factual sentences for the guide's page (Markdown works)
+# read_more: optional list of related books or articles, one per line, in quotes:
+#   read_more:
+#     - "Athearn, Robert G. *Rebel of the Rockies*. Yale University Press, 1962."
+#     - "[An article](https://example.org)"
 
 - id: wood-1889
   title: "Over the Range to the Golden Gate: A Complete Tourist's Guide to Colorado, New Mexico, Utah, Nevada, California, Oregon, Puget Sound, and the Great North-West"

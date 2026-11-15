@@ -84,6 +84,28 @@ def page_html(body):
     return markdown.markdown(body, extensions=["toc"]) if body else ""
 
 
+def read_more(path, value, label):
+    """Optional 'read_more' list: one citation per item, Markdown allowed (italics, links)."""
+    if value in (None, ""):
+        return []
+    if not isinstance(value, list):
+        problem(path, f"{label}'read_more' should be a list, one item per line starting with '  - '.")
+        return []
+    items = []
+    for i, item in enumerate(value, start=1):
+        text = plain(item)
+        if not text:
+            continue
+        if isinstance(item, dict):
+            problem(path, f"{label}read_more item #{i} has a ': ' in it. Wrap the whole line in quotes.")
+            continue
+        html = markdown.markdown(text).strip()
+        if html.startswith("<p>") and html.endswith("</p>"):
+            html = html[3:-4]
+        items.append(html)
+    return items
+
+
 def check_image(path, file_name):
     """Images live in site/images/. Return the path the site uses, or '' if missing."""
     name = plain(file_name)
@@ -148,6 +170,7 @@ def load_guides():
             "covers": plain(g.get("covers")),
             "summary_html": to_html(plain(g.get("summary"))),
             "notes": plain(g.get("notes")),
+            "read_more": read_more(path, g.get("read_more"), f"{gid}: "),
         }
     return guides
 
@@ -220,6 +243,7 @@ def load_places():
             "photos": load_photos(path, fields.get("photos")),
             "tags": [t.lower() for t in as_list(fields.get("tags"))],
             "notes_html": to_html(body),
+            "read_more": read_more(path, fields.get("read_more"), ""),
             "entries": [],
         }
     return places
