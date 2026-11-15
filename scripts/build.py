@@ -215,6 +215,7 @@ def load_places():
             "status_summary": plain(fields.get("status_summary")),
             "former_names": as_list(fields.get("former_names")),
             "visited": plain(fields.get("visited")),
+            "added": date_added(path),
             "coords_source": plain(fields.get("coords_source")),
             "photos": load_photos(path, fields.get("photos")),
             "tags": [t.lower() for t in as_list(fields.get("tags"))],
@@ -284,6 +285,16 @@ def load_site_settings():
         "marquee": [plain(m) for m in marquee if plain(m)],
         "contact_email": plain(fields.get("contact_email")),
     }
+
+
+def date_added(path):
+    """When this file was first committed (YYYY-MM-DD), or '' if git can't tell."""
+    try:
+        out = subprocess.run(["git", "log", "--diff-filter=A", "--follow", "--format=%cs", "--", str(path)],
+                             cwd=ROOT, capture_output=True, text=True, check=True).stdout.split()
+        return out[-1] if out else ""
+    except (OSError, subprocess.CalledProcessError):
+        return ""
 
 
 def last_updated():

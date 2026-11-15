@@ -53,6 +53,7 @@ img { max-width: 100%; height: auto; }
   background: linear-gradient(#C9E3BD, #A9CF98);
   border-bottom: 5px ridge var(--sage-dark);
 }
+.header-gif { height: 84px; width: auto; flex: none; margin-right: -16px; }
 .brand { display: flex; flex-direction: column; gap: 2px; flex: 1 1 320px; }
 .site-title, .site-title:visited {
   font-family: var(--heading); font-weight: 700; font-size: 32px; color: var(--ink);
@@ -100,12 +101,6 @@ img { max-width: 100%; height: auto; }
 .visited.small { font-size: 13px; }
 .not-visited { font: 14px var(--heading); color: var(--ink-mute); }
 .tag { display: inline-block; font: 12px var(--heading); padding: 1px 8px; border: 1px solid var(--rule); background: var(--paper); }
-.uc {
-  display: inline-flex; align-items: center; padding: 4px 10px; margin: 6px 0;
-  font: 700 12px var(--heading); color: #1F1A00;
-  background: repeating-linear-gradient(-45deg, #FFD400 0 10px, #1F1A00 10px 14px); border: 2px solid #1F1A00;
-}
-.uc b { background: #FFD400; padding: 0 4px; }
 
 /* ---- Map page ---- */
 
@@ -231,10 +226,11 @@ details summary { font: 600 15px var(--heading); cursor: pointer; }
   display: flex; flex-direction: column; align-items: center; gap: 12px;
   padding: 20px 16px 28px; font: 12px var(--heading); color: #33402E; text-align: center;
 }
-.site-foot hr {
-  width: min(640px, 100%); border: 0; height: 6px; margin: 0;
-  background: repeating-linear-gradient(90deg, #9C2A1F 0 14px, var(--cream) 14px 20px, #2F5DA8 20px 34px, var(--cream) 34px 40px);
-}
+.site-foot .divider { width: min(533px, 100%); height: auto; }
+.contact-link img { vertical-align: middle; height: 24px; width: auto; }
+.prose img[src$="mailbox.gif"] { vertical-align: middle; height: 28px; width: auto; }
+.uc-line img { vertical-align: middle; max-width: 100%; height: auto; }
+img.new { vertical-align: middle; }
 .counter { display: inline-flex; gap: 2px; vertical-align: middle; }
 .counter span {
   background: #111; color: #7CFC00; font: 700 15px "Courier New", monospace;
@@ -247,6 +243,7 @@ details summary { font: 600 15px var(--heading); cursor: pointer; }
   body { font-size: 17px; }
   .site-head { padding: 14px 16px; }
   .site-title { font-size: 26px; }
+  .header-gif { height: 52px; }
   .main-nav { gap: 4px; font-size: 14px; }
   .main-nav a { padding: 6px 9px; }
   .map-page { flex-direction: column-reverse; }

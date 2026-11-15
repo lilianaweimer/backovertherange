@@ -71,7 +71,11 @@ function figure(it, cls = "") {
     <figcaption><strong>${esc(it.title)}</strong>${bits.length ? "<br>" + bits.join(" · ") : ""}</figcaption>
   </figure>`;
 }
-const underConstruction = (what = "") => `<p><span class="uc"><b>UNDER CONSTRUCTION</b></span>${what ? " " + esc(what) : ""}</p>`;
+const underConstruction = (what = "") => `<p class="uc-line"><img src="images/under-construction.gif" alt="Under construction" width="200" height="30">${what ? " " + esc(what) : ""}</p>`;
+// Places added in the last 30 days get a NEW! badge.
+const NEW_DAYS = 30;
+const isNew = (p) => p.added && (Date.now() - new Date(p.added + "T12:00:00")) / 864e5 <= NEW_DAYS;
+const newBadge = (p) => (isNew(p) ? ' <img class="new" src="images/new.gif" alt="New" width="31" height="12">' : "");
 
 // ---- The map ----------------------------------------------------------------
 
@@ -182,7 +186,7 @@ function applyFilters() {
   const nGuides = new Set(shown.flatMap(placeGuides)).size;
   $("count").textContent = `${plural(shown.length, "place")} · ${plural(nGuides, "book")}`;
   $("list").innerHTML = shown.map((p) => `<li><button type="button" data-id="${esc(p.id)}">
-      <span class="name">${dot(placeColor(p))}${esc(p.name)}</span>
+      <span class="name">${dot(placeColor(p))}${esc(p.name)}${newBadge(p)}</span>
       <span class="meta">${p.entries.length ? p.entries.map(cite).join(" · ") : "No guide entries yet"}</span>
     </button></li>`).join("") || `<li class="empty">No places match. Try clearing a filter.</li>`;
 }
@@ -311,7 +315,7 @@ function placesPage() {
     <table class="table" id="places-table">
       <thead><tr><th>Place</th><th>Region</th><th>In the guides</th><th>Today</th></tr></thead>
       <tbody>${sorted.map((p) => `<tr data-names="${esc([p.name, p.region, ...p.former_names, ...p.entries.map((e) => e.name_in_guide)].join(" ").toLowerCase())}">
-        <td>${dot(placeColor(p))}<a href="#/place/${esc(p.id)}">${esc(p.name)}</a>${p.visited ? ' <span class="visited small" title="Visited">✔</span>' : ""}</td>
+        <td>${dot(placeColor(p))}<a href="#/place/${esc(p.id)}">${esc(p.name)}</a>${newBadge(p)}${p.visited ? ' <span class="visited small" title="Visited">✔</span>' : ""}</td>
         <td>${esc(p.region)}</td>
         <td>${p.entries.length ? p.entries.map(cite).join("<br>") : '<span class="meta">None yet</span>'}</td>
         <td>${statusBadge(p)}</td></tr>`).join("")}</tbody>

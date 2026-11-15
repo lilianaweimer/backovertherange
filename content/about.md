@@ -57,7 +57,7 @@ Public Library, which led to an undergraduate study of two of these guides.
 ## Contact
 
 Know something about one of these places, spot a mistake, or have a guide to
-suggest? Write to [{{contact_email}}](mailto:{{contact_email}}).
+suggest? ![](images/mailbox.gif) Write to [{{contact_email}}](mailto:{{contact_email}}).
 
 ## Reuse and corrections
 
