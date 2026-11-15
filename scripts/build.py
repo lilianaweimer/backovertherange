@@ -168,6 +168,7 @@ def load_places():
             "status_summary": plain(fields.get("status_summary")),
             "former_names": as_list(fields.get("former_names")),
             "visited": plain(fields.get("visited")),
+            "coords_source": plain(fields.get("coords_source")),
             "tags": [t.lower() for t in as_list(fields.get("tags"))],
             "notes_html": to_html(body),
             "entries": [],
