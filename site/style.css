@@ -260,3 +260,6 @@ img.new { vertical-align: middle; }
   .prose { padding: 16px; }
   .table { display: block; overflow-x: auto; }
 }
+
+/* Cite this page */
+.cite-text { font-family: "EB Garamond", Georgia, serif; font-size: 1.05rem; overflow-wrap: anywhere; }

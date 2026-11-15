@@ -36,9 +36,11 @@ both show up together on Denver's page.
 
 All the text on the site lives in plain files, so you never need to touch the HTML:
 
-- **Tagline, marquee, contact email:** `data/site.yml`.
+- **Tagline, marquee, contact email, site address, license:** `data/site.yml`.
 - **About and Learn more:** `content/about.md` and `content/learn-more.md`.
   `{{guides}}` on Learn more becomes a list of every guide in `data/guides.yml`.
+  `{{license}}`, `{{site_url}}` and `{{updated}}` (date of the latest change)
+  are filled in too, for the "Using and citing this data" section on About.
   Markdown; each `## Heading` becomes a section with its own link
   (`#/about/contact` jumps to the Contact section).
 - **A guide's page:** `summary`, `kind`, `covers` and `color` in `data/guides.yml`.
@@ -169,13 +171,21 @@ Leave it empty and the counter stays hidden.
   `#/guide/wood-1889`, `#/compare`, `#/about`). The map is
   [Leaflet](https://leafletjs.com) on OpenStreetMap tiles; no accounts or keys.
 - `scripts/build.py` reads `data/`, checks everything, and writes
-  `dist/data.json` next to a copy of `site/`.
+  `dist/data.json` next to a copy of `site/`. It also writes `dist/downloads/`:
+  the same data as one JSON file and three CSV files (guides, places, entries),
+  without site-only fields like colors and photos, for others to reuse and cite.
 - `.github/workflows/site.yml` runs the build and publishes `dist/` to
   GitHub Pages.
 
 To add a status or category, add it to the lists at the top of
 `scripts/build.py`, and give a status a label in `site/app.js` (`STATUS_LABELS`).
 Kinds of book need no setup: write any `kind:` in `data/guides.yml` and the site groups by it.
+
+## License and citing
+
+The data and writing are under CC BY 4.0 (`LICENSE-DATA.md`); the code is
+under MIT (`LICENSE`). `CITATION.cff` gives GitHub's "Cite this repository"
+button. Each place page has a "Cite this page" box.
 
 ## Finding more guides
 

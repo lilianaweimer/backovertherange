@@ -17,3 +17,11 @@ contact_email: hello@backovertherange.com
 # 2. In GoatCounter: Settings -> tick "Allow adding visitor counts on your website"
 # 3. Put the code here, between the quotes. Leave it empty to hide the counter.
 goatcounter: "coronata"
+
+# The site's address, used in citations and the downloadable data.
+url: https://backovertherange.com/
+
+# The license for the data and the site's own writing (see LICENSE-DATA.md).
+# Shown in the footer, on the About page, and in the downloads.
+license: CC BY 4.0
+license_url: https://creativecommons.org/licenses/by/4.0/
