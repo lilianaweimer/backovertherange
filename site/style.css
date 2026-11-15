@@ -44,6 +44,8 @@ img { max-width: 100%; height: auto; }
 .skip { position: absolute; left: -999px; }
 .skip:focus { left: 8px; top: 8px; z-index: 2000; background: var(--paper); padding: 6px 10px; }
 .meta { color: var(--ink-mute); font-size: 0.88em; }
+/* The · between items: a little extra room on the right, where the font sets it tight. */
+.sep { margin-right: 0.25em; }
 
 /* ---- Header, menu, marquee ---- */
 

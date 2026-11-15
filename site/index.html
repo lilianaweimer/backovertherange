@@ -61,7 +61,7 @@
           <label><input type="checkbox" id="f-illus"> Only places with illustrations</label>
           <label><input type="checkbox" id="f-visited"> Only places I’ve visited</label>
         </fieldset>
-        <p class="count"><span id="count" aria-live="polite"></span> · <button type="button" class="linkish" id="clear">Clear filters</button></p>
+        <p class="count"><span id="count" aria-live="polite"></span> <span class="sep">·</span> <button type="button" class="linkish" id="clear">Clear filters</button></p>
         <ol id="list" class="place-list"></ol>
       </aside>
       <div class="map-wrap">
@@ -75,7 +75,7 @@
   <footer class="site-foot">
     <img class="divider" src="images/divider.gif" alt="" width="533" height="37">
     <div id="visitors" hidden>You are visitor no. <span id="visitor-digits" class="counter"></span></div>
-    <div>Best viewed in any browser, at any size · <a href="#/about/contact" class="contact-link"><img src="images/mailbox.gif" alt="" width="34" height="34"> Contact</a><span id="updated"></span></div>
+    <div>Best viewed in any browser, at any size <span class="sep">·</span> <a href="#/about/contact" class="contact-link"><img src="images/mailbox.gif" alt="" width="34" height="34"> Contact</a><span id="updated"></span></div>
   </footer>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
