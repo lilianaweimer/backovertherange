@@ -45,9 +45,9 @@ and permissions yourself, and respect property and closures.
 
 ## About me
 
-*Two or three sentences in your own voice: who keeps this site, why old
-guidebooks, where you're based.* A "✔ Visited" mark on a place means I've been
-there myself.
+WIP
+
+A "✔ Visited" mark on a place means I've been there myself.
 
 ## Where it started
 

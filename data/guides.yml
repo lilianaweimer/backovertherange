@@ -1,17 +1,18 @@
-# One block per guide EDITION you read from.
+# One block per guide EDITION you read from. Start with first editions;
+# a later edition gets its own block (e.g. wood-1904) when you add it.
 # The `id` is what entry files use in their `guide:` line.
-# Keep ids short: author-year, e.g. wood-1904, baedeker-1909.
+# Keep ids short: author-year, e.g. wood-1889, baedeker-1909.
 #
 # kind:  what sort of book, in your own words, e.g. Railroad guide, Road guide,
 #        Travelogue, Route 66 guide. Same words = grouped together on the site.
 # color: the map marker color for this guide, like #4B5632 (from the cover)
 # summary: a few factual sentences for the guide's page (Markdown works)
 
-- id: wood-1904
+- id: wood-1889
   title: "Over the Range to the Golden Gate: A Complete Tourist's Guide to Colorado, New Mexico, Utah, Nevada, California, Oregon, Puget Sound, and the Great North-West"
   short_title: Over the Range to the Golden Gate
   author: Stanley Wood
-  year: 1904
+  year: 1889
   first_published: 1889
   publisher: R. R. Donnelley & Sons Co., Chicago
   kind: Railroad guide

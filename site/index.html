@@ -12,6 +12,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap">
   <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="favicon-32.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
 </head>
 <body>
   <!--
@@ -58,7 +61,7 @@
           <label><input type="checkbox" id="f-illus"> Only places with illustrations</label>
           <label><input type="checkbox" id="f-visited"> Only places I’ve visited</label>
         </fieldset>
-        <p class="count"><span id="count" aria-live="polite"></span> · <button type="button" class="linkish" id="clear">Clear filters</button></p>
+        <p class="count"><span id="count" aria-live="polite"></span> <span class="sep">·</span> <button type="button" class="linkish" id="clear">Clear filters</button></p>
         <ol id="list" class="place-list"></ol>
       </aside>
       <div class="map-wrap">
@@ -72,7 +75,7 @@
   <footer class="site-foot">
     <img class="divider" src="images/divider.gif" alt="" width="533" height="37">
     <div id="visitors" hidden>You are visitor no. <span id="visitor-digits" class="counter"></span></div>
-    <div>Best viewed in any browser, at any size · <a href="#/about/contact" class="contact-link"><img src="images/mailbox.gif" alt="" width="34" height="34"> Contact</a><span id="updated"></span></div>
+    <div>Best viewed in any browser, at any size <span class="sep">·</span> <a href="#/about/contact" class="contact-link"><img src="images/mailbox.gif" alt="" width="34" height="34"> Contact</a><span id="updated"></span></div>
   </footer>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

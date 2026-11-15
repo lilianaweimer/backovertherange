@@ -53,7 +53,7 @@ function illustrationsFor(placeId) {
 }
 function cite(e) {
   const g = guides[e.guide];
-  return `${esc(surname(g.author))}, ${esc(g.year)}${e.page ? " · " + esc(pageRef(e.page)) : ""}`;
+  return `${esc(surname(g.author))}, ${esc(g.year)}${e.page ? " <span class=sep>·</span> " + esc(pageRef(e.page)) : ""}`;
 }
 function snippet(e, max = 110) {
   if (e.summary) return e.summary;
@@ -68,7 +68,7 @@ function figure(it, cls = "") {
   const bits = [g ? `<i>${esc(g.short_title)}</i>` : "", pageRef(it.page), it.material, it.artist].filter(Boolean);
   return `<figure class="illus ${cls}">
     ${it.src ? `<img src="${esc(it.src)}" alt="${esc(it.title)}" loading="lazy">` : `<div class="img-missing">Image coming soon</div>`}
-    <figcaption><strong>${esc(it.title)}</strong>${bits.length ? "<br>" + bits.join(" · ") : ""}</figcaption>
+    <figcaption><strong>${esc(it.title)}</strong>${bits.length ? "<br>" + bits.join(" <span class=sep>·</span> ") : ""}</figcaption>
   </figure>`;
 }
 const underConstruction = (what = "") => `<p class="uc-line"><img src="images/under-construction.gif" alt="Under construction" width="600" height="32">${what ? "<br>" + esc(what) : ""}</p>`;
@@ -114,7 +114,7 @@ function popupHtml(p) {
   return `<div class="popup">
     ${illus ? `<figure><img src="${esc(illus.src)}" alt="${esc(illus.title)}"><figcaption>${esc(illus.title)}${illus.artist ? ", engraved by " + esc(illus.artist) : ""}</figcaption></figure>` : ""}
     <strong class="popup-name">${esc(p.name)}</strong>
-    ${e ? `<span class="popup-cite">${esc(guides[e.guide].short_title)}, ${esc(guides[e.guide].year)}${e.page ? " · " + esc(pageRef(e.page)) : ""}</span>
+    ${e ? `<span class="popup-cite">${esc(guides[e.guide].short_title)}, ${esc(guides[e.guide].year)}${e.page ? " <span class=sep>·</span> " + esc(pageRef(e.page)) : ""}</span>
       <q>${esc(snippet(e))}</q>` : `<span class="popup-cite">No guide entries yet</span>`}
     ${p.entries.length > 1 ? `<span class="popup-cite">+ ${plural(p.entries.length - 1, "more guide")}</span>` : ""}
     <a href="#/place/${esc(p.id)}">Read the entry and today’s notes →</a>
@@ -184,10 +184,10 @@ function applyFilters() {
     for (const p of shown) cluster.addLayer(markers[p.id]);
   }
   const nGuides = new Set(shown.flatMap(placeGuides)).size;
-  $("count").textContent = `${plural(shown.length, "place")} · ${plural(nGuides, "book")}`;
+  $("count").innerHTML = `${plural(shown.length, "place")} <span class=sep>·</span> ${plural(nGuides, "book")}`;
   $("list").innerHTML = shown.map((p) => `<li><button type="button" data-id="${esc(p.id)}">
       <span class="name">${dot(placeColor(p))}${esc(p.name)}${newBadge(p)}</span>
-      <span class="meta">${p.entries.length ? p.entries.map(cite).join(" · ") : "No guide entries yet"}</span>
+      <span class="meta">${p.entries.length ? p.entries.map(cite).join(" <span class=sep>·</span> ") : "No guide entries yet"}</span>
     </button></li>`).join("") || `<li class="empty">No places match. Try clearing a filter.</li>`;
 }
 
@@ -244,7 +244,7 @@ function placePage(id) {
   const entryBlock = (e) => {
     const g = guides[e.guide];
     return `<blockquote class="quote">${e.quote_html}</blockquote>
-      <p class="source">${esc(g.author)}, <a href="#/guide/${esc(g.id)}"><i>${esc(g.short_title)}</i></a> (${esc(g.year)})${e.page ? ", " + esc(pageRef(e.page)) : ""}${e.section ? " · " + esc(e.section) : ""}${e.name_in_guide !== p.name ? ` · as “${esc(e.name_in_guide)}”` : ""}${g.scan_url ? ` · <a href="${esc(g.scan_url)}" target="_blank" rel="noopener">Read the page scan ↗</a>` : ""}</p>`;
+      <p class="source">${esc(g.author)}, <a href="#/guide/${esc(g.id)}"><i>${esc(g.short_title)}</i></a> (${esc(g.year)})${e.page ? ", " + esc(pageRef(e.page)) : ""}${e.section ? " <span class=sep>·</span> " + esc(e.section) : ""}${e.name_in_guide !== p.name ? ` <span class=sep>·</span> as “${esc(e.name_in_guide)}”` : ""}${g.scan_url ? ` <span class=sep>·</span> <a href="${esc(g.scan_url)}" target="_blank" rel="noopener">Read the page scan ↗</a>` : ""}</p>`;
   };
 
   // Next and previous place in the same guide, by page.
@@ -269,8 +269,8 @@ function placePage(id) {
   return `
     ${crumbs(["Map", "#/"], ...(p.region ? [[p.region, "#/places"]] : []), [p.name])}
     <h1>${esc(p.name)}</h1>
-    <p class="meta-line">${[label(p.category), p.region, coordText(p)].filter(Boolean).map(esc).join(" · ")}
-      · <a href="#/?place=${esc(p.id)}">Show on map</a> · <a href="#/place/${esc(p.id)}/get-there">Get there</a>
+    <p class="meta-line">${[label(p.category), p.region, coordText(p)].filter(Boolean).map(esc).join(" <span class=sep>·</span> ")}
+      <span class=sep>·</span> <a href="#/?place=${esc(p.id)}">Show on map</a> <span class=sep>·</span> <a href="#/place/${esc(p.id)}/get-there">Get there</a>
       ${others.size ? `<br>Also called: ${esc([...others].join(", "))}` : ""}</p>
 
     <div class="place-grid">
@@ -293,7 +293,7 @@ function placePage(id) {
         </section>
         <section class="panel" id="get-there">
           <h2>Get there</h2>
-          <p class="meta">${lat}, ${lon}${p.coords_source ? " · " + esc(p.coords_source) : ""}${p.precision !== "exact" ? ` · <span class="approx">${esc(p.precision)} location</span>` : ""}</p>
+          <p class="meta">${lat}, ${lon}${p.coords_source ? " <span class=sep>·</span> " + esc(p.coords_source) : ""}${p.precision !== "exact" ? ` <span class=sep>·</span> <span class="approx">${esc(p.precision)} location</span>` : ""}</p>
           <p class="buttons">
             <a class="btn" href="https://www.google.com/maps/search/?api=1&query=${lat},${lon}" target="_blank" rel="noopener">Google Maps ↗</a>
             <a class="btn" href="https://maps.apple.com/?ll=${lat},${lon}&q=${q}" target="_blank" rel="noopener">Apple Maps ↗</a>
@@ -334,7 +334,7 @@ function guidesPage() {
         <h2>${esc(k)}</h2>
         <ul class="guide-list">${byKind[k].sort((a, b) => a.year - b.year).map((g) => `<li>
           ${dot(guideColor(g))}<a href="#/guide/${esc(g.id)}"><i>${esc(g.short_title)}</i></a>, ${esc(g.author)}, ${esc(g.year)}
-          <span class="meta">· ${plural(placesIn(g.id).length, "place")}${g.covers ? " · " + esc(g.covers) : ""}</span></li>`).join("")}</ul>
+          <span class="meta"> <span class=sep>·</span> ${plural(placesIn(g.id).length, "place")}${g.covers ? " <span class=sep>·</span> " + esc(g.covers) : ""}</span></li>`).join("")}</ul>
       </section>`).join("")}`;
 }
 
@@ -357,7 +357,7 @@ function guidePage(id) {
       <div>
         <h1><i>${esc(g.short_title)}</i></h1>
         ${subtitle ? `<p class="subtitle">${esc(subtitle)}</p>` : ""}
-        <p class="meta-line">${[g.author, g.publisher, g.year && `${g.year} edition`, g.first_published && g.first_published !== g.year ? `first published ${g.first_published}` : ""].filter(Boolean).map(esc).join(" · ")}</p>
+        <p class="meta-line">${[g.author, g.publisher, g.year && `${g.year} edition`, g.first_published && g.first_published !== g.year ? `first published ${g.first_published}` : ""].filter(Boolean).map(esc).join(" <span class=sep>·</span> ")}</p>
         <p class="buttons">
           ${g.scan_url ? `<a class="btn" href="${esc(g.scan_url)}" target="_blank" rel="noopener">Read it on the Internet Archive ↗</a>` : `<span class="btn disabled">Scan link coming soon</span>`}
           ${g.hathitrust_url ? `<a class="btn" href="${esc(g.hathitrust_url)}" target="_blank" rel="noopener">HathiTrust ↗</a>` : ""}
@@ -430,7 +430,7 @@ function comparePage(params) {
       </section>
       <section class="panel">
         <h2>In the guides</h2>
-        <p>${plural(rowsA.length, "place")}${pages.length ? ` · ${esc(pageRef(Math.min(...pages) === Math.max(...pages) ? String(pages[0]) : `${Math.min(...pages)}-${Math.max(...pages)}`))}` : ""} · <i>${esc(gA.short_title)}</i>, ${esc(gA.year)}</p>
+        <p>${plural(rowsA.length, "place")}${pages.length ? ` <span class=sep>·</span> ${esc(pageRef(Math.min(...pages) === Math.max(...pages) ? String(pages[0]) : `${Math.min(...pages)}-${Math.max(...pages)}`))}` : ""} <span class=sep>·</span> <i>${esc(gA.short_title)}</i>, ${esc(gA.year)}</p>
         <p class="meta">Counts come straight from the entries; nothing here is written by hand.</p>
       </section>
     </div>
@@ -449,7 +449,7 @@ function illustrationsPage() {
       <a class="card" href="#/illustrations/${esc(c.id)}">
         ${c.cover ? `<img src="${esc(c.cover)}" alt="">` : (c.items.find((it) => it.src) ? `<img src="${esc(c.items.find((it) => it.src).src)}" alt="">` : `<div class="img-missing">Image coming soon</div>`)}
         <h2>${esc(c.title)}</h2>
-        <p class="meta">${[plural(c.items.length, "item"), c.holding, c.dates].filter(Boolean).map(esc).join(" · ")}</p>
+        <p class="meta">${[plural(c.items.length, "item"), c.holding, c.dates].filter(Boolean).map(esc).join(" <span class=sep>·</span> ")}</p>
       </a>`).join("") || underConstruction("Collections are being added.")}
     </section>
     <p class="meta">On the map, tick “Only places with illustrations” to see where they are.</p>`;
@@ -466,7 +466,7 @@ function collectionPage(id) {
       <div>
         <h1>${esc(c.title)}</h1>
         ${c.intro_html}
-        <p class="meta-line">${[c.holding, c.dates].filter(Boolean).map(esc).join(" · ")}</p>
+        <p class="meta-line">${[c.holding, c.dates].filter(Boolean).map(esc).join(" <span class=sep>·</span> ")}</p>
       </div>
       ${lead ? figure(lead, "lead") : ""}
     </div>
@@ -574,7 +574,7 @@ function showFrame(data) {
     $("marquee").textContent = "★ " + s.marquee.join(" ★ ") + " ★";
     $("marquee").hidden = false;
   }
-  if (data.updated) $("updated").textContent = " · Last updated " + fmtDate(data.updated);
+  if (data.updated) $("updated").innerHTML = " <span class=sep>·</span> Last updated " + fmtDate(data.updated);
 
   const code = s.goatcounter;
   if (!code) return;

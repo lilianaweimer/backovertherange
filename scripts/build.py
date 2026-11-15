@@ -119,7 +119,7 @@ def load_guides():
         gid = plain(g.get("id"))
         label = gid or f"guide #{i}"
         if not ID_PATTERN.match(gid):
-            problem(path, f"{label}: id must be lowercase letters, numbers and dashes, e.g. wood-1904.")
+            problem(path, f"{label}: id must be lowercase letters, numbers and dashes, e.g. wood-1889.")
             continue
         if gid in guides:
             problem(path, f"{gid}: this id is used twice.")
