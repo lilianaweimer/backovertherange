@@ -219,6 +219,7 @@ function showMap(params) {
   map.invalidateSize();
   if (params.get("guide") && guides[params.get("guide")]) {
     for (const id of ["search", "f-kind", "f-status", "f-tag", "f-era"]) $(id).value = "";
+    $("f-illus").checked = $("f-visited").checked = false;
     $("f-guide").value = params.get("guide");
     applyFilters();
   }
