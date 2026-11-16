@@ -323,9 +323,6 @@ def load_entries(guides, places):
         if not plain(fields.get("page")):
             problem(path, "'page' is missing.")
         illustration = plain(fields.get("illustration"))
-        if not body and not illustration:
-            problem(path, "the quote is missing. Paste the guide's words below the second '---' "
-                          "(or, for a place the guide only shows in a picture, fill in 'illustration:').")
         facts = fields.get("facts") or []
         if isinstance(facts, str):
             facts = [facts]
@@ -333,6 +330,9 @@ def load_entries(guides, places):
             problem(path, "'facts' should be a list, one line per line of the box, each starting with '  - '. "
                           "Wrap a line in quotes if it has a ': ' in it.")
             facts = []
+        if not body and not illustration and not facts:
+            problem(path, "the quote is missing. Paste the guide's words below the second '---' "
+                          "(or, for a place the guide only shows in a picture, fill in 'illustration:').")
         excerpt = plain(fields.get("excerpt"))
         quote_html = to_html(body)
         if excerpt:

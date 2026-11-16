@@ -118,6 +118,7 @@ function citeAll(p, sep = " <span class=sep>·</span> ") {
 function snippet(e, max = 110) {
   if (e.summary) return e.summary;
   if (!e.quote_html && e.illustration) return `Illustration: ${e.illustration}`;
+  if (!e.quote_html && e.facts?.length) return e.facts.join(" ");
   const t = stripTags(e.excerpt_html || e.quote_html);
   return t.length > max ? t.slice(0, max).replace(/\s+\S*$/, "") + "…" : t;
 }
