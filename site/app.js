@@ -833,14 +833,38 @@ document.addEventListener("change", (ev) => {
   if (form) location.hash = "#/compare?" + new URLSearchParams(new FormData(form)).toString();
 });
 
+const MARQUEE_SPEED = 50; // pixels per second
+
 // ---- Header, marquee and footer ---------------------------------------------------
 
 function showFrame(data) {
   const s = data.site || {};
   if (s.tagline) $("tagline").textContent = s.tagline;
   if (s.marquee && s.marquee.length) {
-    $("marquee").textContent = "★ " + s.marquee.join(" ★ ") + " ★";
+    // The text is repeated to fill the screen twice over, then slid left by
+    // exactly half, so it loops without a gap. CSS does the moving, which is
+    // smoother than the old <marquee> tag.
+    const text = "★ " + s.marquee.join(" ★ ") + "\u00a0"; // the next copy supplies the closing ★
+    const track = $("marquee-track");
     $("marquee").hidden = false;
+    const fill = () => {
+      track.innerHTML = `<span>${esc(text)}</span>`;
+      const w = track.firstElementChild.offsetWidth || 1;
+      const copies = Math.max(1, Math.ceil(window.innerWidth / w));
+      const half = Array.from(
+        { length: copies },
+        (_, i) => `<span${i ? ' aria-hidden="true"' : ""}>${esc(text)}</span>`,
+      ).join("");
+      track.innerHTML = half + half.replace(/<span>/g, '<span aria-hidden="true">');
+      $("marquee").style.setProperty("--marquee-time", `${(w * copies) / MARQUEE_SPEED}s`);
+    };
+    fill();
+    if (document.fonts) document.fonts.ready.then(fill); // the width changes once the font loads
+    let resizeTimer;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(fill, 250);
+    });
   }
   if (data.updated)
     $("updated").innerHTML = " <span class=sep>·</span> Last updated " + fmtDate(data.updated);

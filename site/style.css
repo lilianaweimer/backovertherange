@@ -161,6 +161,44 @@ img {
   padding: 5px 0;
   border-bottom: 3px ridge var(--sage-dark);
 }
+.marquee {
+  overflow: hidden;
+  white-space: nowrap;
+}
+.marquee-track {
+  display: inline-flex;
+  animation: marquee var(--marquee-time, 40s) linear infinite;
+  will-change: transform;
+}
+.marquee-track span {
+  flex: none;
+}
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Standing still: show the text once, wrapped, so every message can be read. */
+  .marquee {
+    white-space: normal;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .marquee-track {
+    display: block;
+    animation: none;
+  }
+  .marquee-track [aria-hidden="true"] {
+    display: none;
+  }
+}
 
 /* ---- Buttons, fields, badges ---- */
 
