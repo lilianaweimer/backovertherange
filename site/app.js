@@ -288,7 +288,12 @@ function matches(p) {
   if (era && !gs.some((g) => Math.floor(+g.year / 10) * 10 === +era)) return false;
   if (status && p.status !== status) return false;
   if (tag && !p.tags.includes(tag)) return false;
-  if ($("f-illus").checked && !illustrationsFor(p.id).length) return false;
+  if (
+    $("f-illus").checked &&
+    !illustrationsFor(p.id).length &&
+    !p.entries.some((e) => e.illustration || e.image)
+  )
+    return false;
   if ($("f-visited").checked && !p.visited) return false;
   if (q) {
     const names = [
