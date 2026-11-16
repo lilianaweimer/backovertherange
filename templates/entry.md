@@ -7,4 +7,4 @@ page:            # page number, or a range like "15-25"
 section:         # chapter or rail line it appears under (optional)
 summary:         # one-line paraphrase (optional)
 ---
-The guide's own words go here. Paste as much as you like.
+The guide's own words go here.

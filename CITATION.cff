@@ -3,7 +3,9 @@ cff-version: 1.2.0
 message: "If you use this data, please cite it as below."
 type: dataset
 title: "Back Over the Range"
-abstract: "A map of the places described in public-domain travel guides, with each guide's own words and notes on the place today."
+abstract:
+  "A map of the places described in public-domain travel guides, with each guide's own words and
+  notes on the place today."
 authors:
   - name: "Back Over the Range"
 url: "https://backovertherange.com/"

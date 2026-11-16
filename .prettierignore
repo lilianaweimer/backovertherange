@@ -1,0 +1,14 @@
+# Build output and dependencies
+dist/
+node_modules/
+
+# Binary assets
+site/images/
+site/*.png
+site/*.ico
+
+# Editor settings
+.idea/
+
+# Starter files with hand-aligned comments; keep them as laid out
+templates/

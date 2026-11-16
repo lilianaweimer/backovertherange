@@ -1,85 +1,135 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Back Over the Range</title>
-  <meta name="description" content="A map of the places in old public-domain travel guides, with each guide's own words and notes on the place today.">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap">
-  <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" href="favicon-32.png">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
-</head>
-<body>
-  <!--
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Back Over the Range</title>
+    <meta
+      name="description"
+      content="A map of the places in old public-domain travel guides, with each guide's own words and notes on the place today."
+    />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" href="favicon-32.png" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  </head>
+  <body>
+    <!--
     The page frame: header, menu, scrolling marquee, the map, and the footer.
     The words in the marquee and the tagline come from data/site.yml.
     Everything inside <main> is drawn by app.js from data.json.
   -->
-  <a class="skip" href="#view">Skip to content</a>
-  <header class="site-head">
-    <img class="header-gif" src="images/header.gif" alt="" width="140" height="84">
-    <div class="brand">
-      <a href="#/" class="site-title">Back Over the Range</a>
-      <span class="tagline" id="tagline"></span>
-    </div>
-    <nav aria-label="Main" class="main-nav">
-      <a href="#/" data-nav="map">Map</a>
-      <a href="#/places" data-nav="places">Places</a>
-      <a href="#/guides" data-nav="guides">Guides</a>
-      <a href="#/compare" data-nav="compare">Compare</a>
-      <a href="#/illustrations" data-nav="illustrations">Illustrations</a>
-      <a href="#/learn-more" data-nav="learn-more">Learn more</a>
-      <a href="#/about" data-nav="about">About</a>
-    </nav>
-  </header>
-  <marquee class="marquee" id="marquee" scrollamount="4" hidden></marquee>
-
-  <main id="view" tabindex="-1">
-    <!-- The map stays loaded while you visit other pages, so it is not redrawn each time. -->
-    <section id="map-page" class="map-page" hidden>
-      <aside class="map-side">
-        <h1>Explore the map</h1>
-        <label class="field">Search a place, then or now
-          <input id="search" type="search" placeholder="Sisson, Lucin, Tahoe…">
-        </label>
-        <div class="field-grid">
-          <label class="field">Kind of book <select id="f-kind"><option value="">All kinds</option></select></label>
-          <label class="field">Book <select id="f-guide"><option value="">All books</option></select></label>
-          <label class="field">Today <select id="f-status"><option value="">Any status</option></select></label>
-          <label class="field">Theme <select id="f-tag"><option value="">Any theme</option></select></label>
-          <label class="field">Published <select id="f-era"><option value="">Any year</option></select></label>
-        </div>
-        <fieldset class="checks">
-          <legend>Show on the map</legend>
-          <label><input type="checkbox" id="f-illus"> Only places with illustrations</label>
-          <label><input type="checkbox" id="f-visited"> Only places I’ve visited</label>
-        </fieldset>
-        <p class="count"><span id="count" aria-live="polite"></span> <span class="sep">·</span> <button type="button" class="linkish" id="clear">Clear filters</button></p>
-        <ol id="list" class="place-list"></ol>
-      </aside>
-      <div class="map-wrap">
-        <div id="map" class="map" role="region" aria-label="Map of places"></div>
-        <div id="key" class="key"></div>
+    <a class="skip" href="#view">Skip to content</a>
+    <header class="site-head">
+      <img class="header-gif" src="images/header.gif" alt="" width="140" height="84" />
+      <div class="brand">
+        <a href="#/" class="site-title">Back Over the Range</a>
+        <span class="tagline" id="tagline"></span>
       </div>
-    </section>
-    <div id="page" class="page"></div>
-  </main>
+      <nav aria-label="Main" class="main-nav">
+        <a href="#/" data-nav="map">Map</a>
+        <a href="#/places" data-nav="places">Places</a>
+        <a href="#/guides" data-nav="guides">Guides</a>
+        <a href="#/compare" data-nav="compare">Compare</a>
+        <a href="#/illustrations" data-nav="illustrations">Illustrations</a>
+        <a href="#/learn-more" data-nav="learn-more">Learn more</a>
+        <a href="#/about" data-nav="about">About</a>
+      </nav>
+    </header>
+    <div class="marquee" id="marquee" hidden>
+      <div class="marquee-track" id="marquee-track"></div>
+    </div>
 
-  <footer class="site-foot">
-    <img class="divider" src="images/divider.gif" alt="" width="533" height="37">
-    <div id="visitors" hidden>You are visitor no. <span id="visitor-digits" class="counter"></span></div>
-    <div>Best viewed in any browser, at any size <span class="sep">·</span> <a href="#/about/contact" class="contact-link"><img src="images/mailbox.gif" alt="" width="34" height="34"> Contact</a><span id="updated"></span><span id="license"></span></div>
-  </footer>
+    <main id="view" tabindex="-1">
+      <!-- The map stays loaded while you visit other pages, so it is not redrawn each time. -->
+      <section id="map-page" class="map-page" hidden>
+        <aside class="map-side">
+          <h1>Explore the map</h1>
+          <label class="field"
+            >Search a place, then or now
+            <input id="search" type="search" placeholder="Sisson, Lucin, Tahoe…" />
+          </label>
+          <div class="field-grid">
+            <label class="field"
+              >Kind of book
+              <select id="f-kind">
+                <option value="">All kinds</option>
+              </select></label
+            >
+            <label class="field"
+              >Book
+              <select id="f-guide">
+                <option value="">All books</option>
+              </select></label
+            >
+            <label class="field"
+              >Today
+              <select id="f-status">
+                <option value="">Any status</option>
+              </select></label
+            >
+            <label class="field"
+              >Theme
+              <select id="f-tag">
+                <option value="">Any theme</option>
+              </select></label
+            >
+            <label class="field"
+              >Published
+              <select id="f-era">
+                <option value="">Any year</option>
+              </select></label
+            >
+          </div>
+          <fieldset class="checks">
+            <legend>Show on the map</legend>
+            <label><input type="checkbox" id="f-illus" /> Only places with illustrations</label>
+            <label><input type="checkbox" id="f-visited" /> Only places I’ve visited</label>
+          </fieldset>
+          <p class="count">
+            <span id="count" aria-live="polite"></span> <span class="sep">·</span>
+            <button type="button" class="linkish" id="clear">Clear filters</button>
+          </p>
+          <ol id="list" class="place-list"></ol>
+        </aside>
+        <div class="map-wrap">
+          <div id="map" class="map" role="region" aria-label="Map of places"></div>
+          <div id="key" class="key"></div>
+        </div>
+      </section>
+      <div id="page" class="page"></div>
+    </main>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-  <script src="app.js"></script>
-</body>
+    <footer class="site-foot">
+      <img class="divider" src="images/divider.gif" alt="" width="533" height="37" />
+      <div id="visitors" hidden>
+        You are visitor no. <span id="visitor-digits" class="counter"></span>
+      </div>
+      <div>
+        Best viewed in any browser, at any size <span class="sep">·</span>
+        <a href="#/about/contact" class="contact-link"
+          ><img src="images/mailbox.gif" alt="" width="34" height="34" /> Contact</a
+        ><span id="updated"></span><span id="license"></span>
+      </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script src="app.js"></script>
+  </body>
 </html>
