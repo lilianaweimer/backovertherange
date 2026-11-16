@@ -394,6 +394,11 @@ button.btn {
   overscroll-behavior: contain;
   border-bottom: 1px solid var(--rule);
 }
+.place-list li {
+  /* The browser skips laying out rows that are scrolled out of view. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 64px;
+}
 .place-list button {
   display: flex;
   flex-direction: column;
