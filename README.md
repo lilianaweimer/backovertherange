@@ -132,6 +132,11 @@ a new paragraph; two spaces at the end of a line make a line break.
     - "Population, 25,000."
   ```
 
+**Image sizes:** shrink scans and photos before uploading (see "Shrinking images" in the Notion
+guide: [Squoosh](https://squoosh.app), about 1600px on the long side, JPEG quality about 75). As a
+safety net, the build also shrinks any JPEG or PNG bigger than 1600px in the published site; the
+copy in `site/images/` is left as it is.
+
 **Illustrations:** upload the image to `site/images/`, then add an item to the collection's file in
 `data/illustrations/` (see the example in `karst.yml`). Give it a `place:` and it also shows on that
 place's page and in its map popup. A new collection is a new `.yml` file in the same folder.
@@ -215,8 +220,11 @@ Leave it empty and the counter stays hidden.
 - `site/` holds the page itself: `index.html`, `style.css`, `app.js`. It is one page; the part after
   `#` picks what to show (`#/place/lake-tahoe-ca`, `#/guide/wood-1889`, `#/compare`, `#/about`). The
   map is [Leaflet](https://leafletjs.com) on OpenStreetMap tiles; no accounts or keys.
-- `scripts/build.py` reads `data/`, checks everything, and writes `dist/data.json` next to a copy of
-  `site/`.
+- `scripts/build.py` reads `data/`, checks everything, and writes a copy of `site/` to `dist/` with
+  the data. `dist/data.json` holds what the map and lists need (names, points, page numbers and a
+  short snippet of each passage); the full passages and today's notes go in one small file per
+  place, `dist/places/<place-id>.json`, which a place's page loads when it opens. That keeps the map
+  quick with thousands of entries. The build also shrinks published images over 1600px.
 - `.github/workflows/site.yml` runs the build and publishes `dist/` to GitHub Pages.
 
 To add a status or category, add it to the lists at the top of `scripts/build.py`, and give a status

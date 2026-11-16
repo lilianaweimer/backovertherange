@@ -20,6 +20,8 @@ problem is found, the script stops with an error so nothing broken goes live.
 """
 
 import datetime
+import hashlib
+import html
 import json
 import re
 import shutil
@@ -373,6 +375,61 @@ def load_entries(guides, places):
     return count
 
 
+SNIPPET = 200  # characters of plain text kept on the map for popups and Compare
+
+
+def text_of(fragment):
+    """Plain text from an HTML fragment, for snippets."""
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", fragment or ""))).strip()
+
+
+def split_out_details(places):
+    """Move each place's long text out of the map data. Returns {place id: details}."""
+    details = {}
+    for place in places:
+        d = {"notes_html": place.pop("notes_html", ""), "entries": []}
+        for e in place["entries"]:
+            quote_html, excerpt_html = e.pop("quote_html"), e.pop("excerpt_html")
+            d["entries"].append({"quote_html": quote_html, "excerpt_html": excerpt_html})
+            e["has_text"] = bool(quote_html)
+            t = text_of(excerpt_html or quote_html)
+            e["snippet"] = t if len(t) <= SNIPPET else t[:SNIPPET].rsplit(" ", 1)[0]
+        details[place["id"]] = d
+    return details
+
+
+MAX_IMAGE = 1600  # pixels on the long side; bigger photos and scans are shrunk in the published copy
+
+
+def resize_images(folder):
+    """Shrink oversized JPEG and PNG images in the published copy (site/images/ is left alone)."""
+    try:
+        from PIL import Image, ImageOps
+    except ImportError:
+        print("Note: Pillow isn't installed, so images were published at full size.")
+        return
+    shrunk = []
+    for path in sorted(folder.rglob("*")):
+        if path.suffix.lower() not in (".jpg", ".jpeg", ".png") or not path.is_file():
+            continue
+        try:
+            with Image.open(path) as im:
+                if max(im.size) <= MAX_IMAGE:
+                    continue
+                before = path.stat().st_size
+                im = ImageOps.exif_transpose(im)  # phone photos store their rotation separately
+                im.thumbnail((MAX_IMAGE, MAX_IMAGE), Image.LANCZOS)
+                if path.suffix.lower() == ".png":
+                    im.save(path, optimize=True)
+                else:
+                    im.convert("RGB").save(path, quality=80, optimize=True, progressive=True)
+                shrunk.append(f"{path.name} ({before // 1024} KB -> {path.stat().st_size // 1024} KB)")
+        except OSError as err:
+            print(f"Note: couldn't resize {path.name}: {err}")
+    if shrunk:
+        print(f"Shrank {len(shrunk)} image(s) wider or taller than {MAX_IMAGE}px: " + ", ".join(shrunk))
+
+
 SITE_DEFAULTS = {"goatcounter": "", "tagline": "", "marquee": [], "contact_email": ""}
 
 
@@ -541,7 +598,16 @@ def main():
         "illustrations": collections,
         "pages": pages,
     }
-    (DIST / "data.json").write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
+    # The map only needs names, points and a short snippet, so the long text (the guides'
+    # passages and today's notes) goes into one small file per place, fetched when its page opens.
+    details = split_out_details(out["places"])
+    out["version"] = hashlib.sha1(json.dumps(details, sort_keys=True).encode()).hexdigest()[:10]
+    (DIST / "places").mkdir()
+    for pid, d in details.items():
+        d["version"] = out["version"]  # the page checks this matches the map data it already has
+        (DIST / "places" / f"{pid}.json").write_text(json.dumps(d, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    (DIST / "data.json").write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    resize_images(DIST / "images")
     print(f"Built the site into {DIST.relative_to(ROOT)}/")
 
 

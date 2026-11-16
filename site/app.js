@@ -34,11 +34,6 @@ const label = (s) =>
     .replace(/^\w/, (c) => c.toUpperCase());
 const pageRef = (p) => (p ? (/[-–,]/.test(p) ? "pp. " : "p. ") + String(p).replace("-", "–") : "");
 const surname = (author) => String(author).trim().split(/\s+/).pop();
-const stripTags = (html) => {
-  const d = document.createElement("div");
-  d.innerHTML = html;
-  return d.textContent.trim();
-};
 const firstNum = (p) => parseInt(String(p), 10) || 0;
 const plural = (n, one, many = one + "s") => `${n} ${n === 1 ? one : many}`;
 const fmtDate = (iso) => {
@@ -71,8 +66,16 @@ function guideColor(g) {
   return g.color || FALLBACK_COLORS[DATA.guides.indexOf(g) % FALLBACK_COLORS.length];
 }
 // Sub-places: a place can name another as its 'parent' (Golden Gate Park in San Francisco).
+let onMap = new Set(); // markers currently on the map
+let kidsByParent; // built once: looking through every place for each place gets slow with thousands
 function childrenOf(id) {
-  return DATA.places.filter((q) => q.parent === id).sort((a, b) => a.name.localeCompare(b.name));
+  if (!kidsByParent) {
+    kidsByParent = {};
+    for (const q of DATA.places) if (q.parent) (kidsByParent[q.parent] ||= []).push(q);
+    for (const list of Object.values(kidsByParent))
+      list.sort((a, b) => a.name.localeCompare(b.name));
+  }
+  return kidsByParent[id] || [];
 }
 function ancestors(p) {
   const out = [];
@@ -88,10 +91,15 @@ function placeColor(p) {
   if (!gs.length) return NO_ENTRY_COLOR;
   return gs.length > 1 ? MULTI_COLOR : guideColor(guides[gs[0]]);
 }
+let illusByPlace;
 function illustrationsFor(placeId) {
-  return DATA.illustrations.flatMap((c) =>
-    c.items.filter((it) => it.place === placeId).map((it) => ({ ...it, collection: c })),
-  );
+  if (!illusByPlace) {
+    illusByPlace = {};
+    for (const c of DATA.illustrations)
+      for (const it of c.items)
+        if (it.place) (illusByPlace[it.place] ||= []).push({ ...it, collection: c });
+  }
+  return illusByPlace[placeId] || [];
 }
 // A place's entries, one group per guide (oldest guide first, then by page).
 function byGuide(p) {
@@ -120,9 +128,9 @@ function citeAll(p, sep = " <span class=sep>·</span> ") {
 }
 function snippet(e, max = 110) {
   if (e.summary) return e.summary;
-  if (!e.quote_html && e.illustration) return `Illustration: ${e.illustration}`;
-  if (!e.quote_html && e.facts?.length) return e.facts.join(" ");
-  const t = stripTags(e.excerpt_html || e.quote_html);
+  if (!e.has_text && e.illustration) return `Illustration: ${e.illustration}`;
+  if (!e.has_text && e.facts?.length) return e.facts.join(" ");
+  const t = e.snippet || ""; // the build keeps the first 200 characters of plain text
   return t.length > max ? t.slice(0, max).replace(/\s+\S*$/, "") + "…" : t;
 }
 function statusBadge(p) {
@@ -177,7 +185,11 @@ function setUpMap() {
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   }).addTo(map);
   cluster = L.markerClusterGroup
-    ? L.markerClusterGroup({ showCoverageOnHover: false, maxClusterRadius: 36 })
+    ? L.markerClusterGroup({
+        showCoverageOnHover: false,
+        maxClusterRadius: 36,
+        chunkedLoading: true,
+      })
     : L.layerGroup();
   map.addLayer(cluster);
   for (const p of DATA.places) {
@@ -261,16 +273,13 @@ function setUpFilters() {
     "f-era",
     decades.map((d) => [String(d), `${d}s`]),
   );
-  for (const id of [
-    "search",
-    "f-kind",
-    "f-guide",
-    "f-status",
-    "f-tag",
-    "f-era",
-    "f-illus",
-    "f-visited",
-  ]) {
+  // Typing waits for a short pause before redrawing, so long lists don't lag behind the keys.
+  let typing;
+  $("search").addEventListener("input", () => {
+    clearTimeout(typing);
+    typing = setTimeout(applyFilters, 150);
+  });
+  for (const id of ["f-kind", "f-guide", "f-status", "f-tag", "f-era", "f-illus", "f-visited"]) {
     $(id).addEventListener("input", applyFilters);
   }
   $("clear").addEventListener("click", () => {
@@ -321,8 +330,18 @@ function matches(p) {
 function applyFilters() {
   const shown = DATA.places.filter(matches).sort((a, b) => a.name.localeCompare(b.name));
   if (cluster) {
-    cluster.clearLayers();
-    for (const p of shown) cluster.addLayer(markers[p.id]);
+    // Only touch the markers that change, and in bulk: redrawing thousands one by one is slow.
+    const want = new Set(shown.map((p) => markers[p.id]));
+    const drop = [...onMap].filter((m) => !want.has(m));
+    const add = [...want].filter((m) => !onMap.has(m));
+    if (cluster.removeLayers) {
+      cluster.removeLayers(drop);
+      cluster.addLayers(add);
+    } else {
+      drop.forEach((m) => cluster.removeLayer(m));
+      add.forEach((m) => cluster.addLayer(m));
+    }
+    onMap = want;
   }
   // Say how many of the folded-away filters are in use, so a hidden filter is never a surprise.
   const hiddenOn =
@@ -402,6 +421,23 @@ function crumbs(...parts) {
   return `<nav class="crumbs" aria-label="Breadcrumb">${parts.map(([text, href]) => (href ? `<a href="${esc(href)}">${esc(text)}</a>` : `<span>${esc(text)}</span>`)).join(" › ")}</nav>`;
 }
 
+// Adds a place's passages and today's notes (from places/<id>.json) to the map data.
+function loadPlaceDetails(id) {
+  return fetch(`places/${encodeURIComponent(id)}.json?v=${DATA.version || ""}`)
+    .then((r) => {
+      if (!r.ok) throw new Error(`places/${id}.json: ${r.status}`);
+      return r.json();
+    })
+    .then((d) => {
+      // The site was updated since this page loaded: the entries may no longer line up.
+      if (d.version !== DATA.version) throw new Error("stale");
+      const p = places[id];
+      p.notes_html = d.notes_html;
+      p.entries.forEach((e, i) => Object.assign(e, d.entries[i]));
+      p.loaded = true;
+    });
+}
+
 function placePage(id) {
   const p = places[id];
   if (!p) return notFound("No place with that name yet.");
@@ -426,7 +462,9 @@ function placePage(id) {
         : `<p class="entry-illus-note">Shown in an illustration: “${esc(e.illustration)}”</p>`;
     const more = `Read the full passage${pages ? ` (${pages})` : ""} ▾`;
     const quote = !e.quote_html
-      ? ""
+      ? e.has_text
+        ? `<p class="meta">This passage didn’t load. Try reloading the page.</p>`
+        : ""
       : e.excerpt_html
         ? `<blockquote class="quote"><div class="excerpt">${e.excerpt_html}</div><div class="full" hidden>${e.quote_html}</div></blockquote>
            <p class="more"><button type="button" class="btn" data-passage data-more="${esc(more)}" aria-expanded="false">${esc(more)}</button></p>`
@@ -525,6 +563,16 @@ function placePage(id) {
     </div>`;
 }
 
+const FIRST_ROWS = 150;
+let laterRows = [];
+function addLaterRows() {
+  const body = document.querySelector("#places-table tbody");
+  if (!body || !laterRows.length) return;
+  const q = ($("places-search")?.value || "").trim().toLowerCase();
+  body.insertAdjacentHTML("beforeend", laterRows.splice(0, 400).join(""));
+  if (q) for (const tr of body.rows) tr.hidden = !tr.dataset.names.includes(q);
+  if (laterRows.length) setTimeout(addLaterRows, 0);
+}
 function placesPage() {
   // A to Z, with each place's sub-places right under it, indented.
   const sorted = [];
@@ -536,23 +584,25 @@ function placesPage() {
     .filter((q) => !q.parent || !places[q.parent])
     .sort((a, b) => a.name.localeCompare(b.name)))
     add(q, 0);
+  const rows = sorted.map(
+    (
+      p,
+    ) => `<tr data-names="${esc([p.name, p.region, ...p.former_names, ...p.entries.map((e) => e.name_in_guide), ...ancestors(p).map((x) => x.name)].join(" ").toLowerCase())}">
+        <td${p.depth ? ` class="sub" style="padding-left:${0.6 + 1.2 * p.depth}em"` : ""}>${p.depth ? '<span class="sub-mark" aria-hidden="true">↳ </span>' : ""}${dot(placeColor(p))}<a href="#/place/${esc(p.id)}">${esc(p.name)}</a>${newBadge(p)}${p.visited ? ' <span class="visited small">Visited</span>' : ""}</td>
+        <td>${esc(p.region)}</td>
+        <td>${p.entries.length ? citeAll(p, "<br>") : '<span class="meta">None yet</span>'}</td>
+        <td>${statusBadge(p)}</td></tr>`,
+  );
+  // Draw the first rows now and the rest just after, so a long list opens quickly.
+  laterRows = rows.slice(FIRST_ROWS);
+  if (laterRows.length) setTimeout(addLaterRows, 0);
   return `
     <h1>Places</h1>
     <p class="lede">Every place on the map, A to Z, with places inside a town listed under it. ${plural(sorted.length, "place")} so far.</p>
     <label class="field narrow">Search <input type="search" id="places-search" placeholder="Name, then or now"></label>
     <table class="table" id="places-table">
       <thead><tr><th>Place</th><th>Region</th><th>In the guides</th><th>Today</th></tr></thead>
-      <tbody>${sorted
-        .map(
-          (
-            p,
-          ) => `<tr data-names="${esc([p.name, p.region, ...p.former_names, ...p.entries.map((e) => e.name_in_guide), ...ancestors(p).map((x) => x.name)].join(" ").toLowerCase())}">
-        <td${p.depth ? ` class="sub" style="padding-left:${0.6 + 1.2 * p.depth}em"` : ""}>${p.depth ? '<span class="sub-mark" aria-hidden="true">↳ </span>' : ""}${dot(placeColor(p))}<a href="#/place/${esc(p.id)}">${esc(p.name)}</a>${newBadge(p)}${p.visited ? ' <span class="visited small">Visited</span>' : ""}</td>
-        <td>${esc(p.region)}</td>
-        <td>${p.entries.length ? citeAll(p, "<br>") : '<span class="meta">None yet</span>'}</td>
-        <td>${statusBadge(p)}</td></tr>`,
-        )
-        .join("")}</tbody>
+      <tbody>${rows.slice(0, FIRST_ROWS).join("")}</tbody>
     </table>
     ${sorted.length ? "" : underConstruction("Places are being added.")}`;
 }
@@ -623,7 +673,7 @@ function guidePage(id) {
     <div class="two-col">
       <section class="panel">
         <h2>Places in this book, in page order</h2>
-        ${list.length ? `<ol class="page-order">${list.map(({ p, e, rest }) => `<li><a href="#/place/${esc(p.id)}">${esc(p.name)}</a> <span class="meta">${esc(pageRef(e.page))}${rest.length ? `, also ${esc(pagesText(rest))}` : ""}${!e.quote_html && e.illustration ? " (illustration)" : ""}</span></li>`).join("")}</ol>` : underConstruction("Entries are being added.")}
+        ${list.length ? `<ol class="page-order">${list.map(({ p, e, rest }) => `<li><a href="#/place/${esc(p.id)}">${esc(p.name)}</a> <span class="meta">${esc(pageRef(e.page))}${rest.length ? `, also ${esc(pagesText(rest))}` : ""}${!e.has_text && e.illustration ? " (illustration)" : ""}</span></li>`).join("")}</ol>` : underConstruction("Entries are being added.")}
       </section>
       <div>
       <section class="panel">
@@ -838,7 +888,22 @@ function route() {
   let html, title;
   switch (section) {
     case "place":
-      html = placePage(id);
+      // The guides' passages live in a small file per place; fetch it the first time.
+      if (places[id] && !places[id].loaded) {
+        $("page").innerHTML = `<p class="panel loading">Loading ${esc(places[id].name)}…</p>`;
+        const here = location.hash;
+        loadPlaceDetails(id)
+          .catch((err) => {
+            places[id].loaded = err.message === "stale" ? "stale" : "failed";
+            console.error(err);
+          })
+          .then(() => location.hash === here && route());
+        return;
+      }
+      html =
+        places[id]?.loaded === "stale"
+          ? `<p class="panel">The site was updated while this page was open. <a href="#" onclick="location.reload(); return false">Reload</a> to see the latest.</p>`
+          : placePage(id);
       title = places[id]?.name;
       break;
     case "places":
