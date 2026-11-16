@@ -262,3 +262,8 @@ img.new { vertical-align: middle; }
   .prose { padding: 16px; }
   .table { display: block; overflow-x: auto; }
 }
+
+/* Sub-places */
+.sub-places { list-style: none; padding: 0; margin: 0; }
+.sub-places li { margin: 0.35em 0; }
+.sub-mark { color: var(--ink-mute); }

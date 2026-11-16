@@ -210,8 +210,11 @@ def load_places():
         name = plain(fields.get("name"))
         if not name:
             problem(path, "'name' is missing.")
+        parent = plain(fields.get("parent"))
         lat, lon = fields.get("lat"), fields.get("lon")
-        if not isinstance(lat, (int, float)) or not isinstance(lon, (int, float)):
+        if parent and lat in (None, "") and lon in (None, ""):
+            lat = lon = None  # filled in from the parent below
+        elif not isinstance(lat, (int, float)) or not isinstance(lon, (int, float)):
             problem(path, "'lat' and 'lon' must both be numbers, e.g. lat: 47.6062 and lon: -122.3321.")
             lat = lon = None
         elif not (-90 <= lat <= 90 and -180 <= lon <= 180):
@@ -229,6 +232,7 @@ def load_places():
         places[pid] = {
             "id": pid,
             "name": name,
+            "parent": parent,
             "region": plain(fields.get("region")),
             "lat": lat,
             "lon": lon,
@@ -245,8 +249,50 @@ def load_places():
             "notes_html": to_html(body),
             "read_more": read_more(path, fields.get("read_more"), ""),
             "entries": [],
+            "_path": path,
         }
+    link_parents(places)
+    for place in places.values():
+        del place["_path"]
     return places
+
+
+def link_parents(places):
+    """Check each 'parent:' and give sub-places without lat/lon their parent's point."""
+    for p in places.values():
+        if p["parent"] and p["parent"] not in places:
+            problem(p["_path"], f"parent '{p['parent']}' has no file in data/places/.")
+            p["parent"] = ""
+        elif p["parent"] == p["id"]:
+            problem(p["_path"], "a place can't be its own parent.")
+            p["parent"] = ""
+    for p in places.values():
+        seen, q = {p["id"]}, p
+        while q["parent"]:
+            q = places[q["parent"]]
+            if q["id"] in seen:
+                problem(p["_path"], f"the 'parent:' lines go round in a circle through '{q['id']}'.")
+                p["parent"] = ""
+                break
+            seen.add(q["id"])
+    def resolve(p, depth=0):
+        if p["lat"] is None and p["parent"] and depth < 50:
+            par = places[p["parent"]]
+            resolve(par, depth + 1)
+            if par["lat"] is not None:
+                p["lat"], p["lon"] = par["lat"], par["lon"]
+                if p["precision"] == "exact":
+                    p["precision"] = "approximate"
+                p["coords_source"] = p["coords_source"] or f"Same point as {par['name']}"
+    for p in places.values():
+        resolve(p)
+    for p in places.values():
+        if p["lat"] is None and not problems_for(p["_path"]):
+            problem(p["_path"], "'lat' and 'lon' are missing, and its parent has none to borrow.")
+
+
+def problems_for(path):
+    return any(x.startswith(f"{path.relative_to(ROOT)}:") for x in problems)
 
 
 def load_entries(guides, places):

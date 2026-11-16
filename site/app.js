@@ -42,6 +42,14 @@ let DATA, guides = {}, places = {}, collections = {};
 
 function kindsInUse() { return [...new Set(DATA.guides.map((g) => g.kind))].sort((a, b) => a.localeCompare(b)); }
 function guideColor(g) { return g.color || FALLBACK_COLORS[DATA.guides.indexOf(g) % FALLBACK_COLORS.length]; }
+// Sub-places: a place can name another as its 'parent' (Golden Gate Park in San Francisco).
+function childrenOf(id) { return DATA.places.filter((q) => q.parent === id).sort((a, b) => a.name.localeCompare(b.name)); }
+function ancestors(p) {
+  const out = [];
+  for (let q = places[p.parent]; q && out.length < 50; q = places[q.parent]) out.unshift(q);
+  return out;
+}
+const inParent = (p) => (p.parent && places[p.parent] ? `In ${places[p.parent].name}` : "");
 function placeGuides(p) { return [...new Set(p.entries.map((e) => e.guide))]; }
 function placeColor(p) {
   const gs = placeGuides(p);
@@ -114,6 +122,7 @@ function popupHtml(p) {
   return `<div class="popup">
     ${illus ? `<figure><img src="${esc(illus.src)}" alt="${esc(illus.title)}"><figcaption>${esc(illus.title)}${illus.artist ? ", engraved by " + esc(illus.artist) : ""}</figcaption></figure>` : ""}
     <strong class="popup-name">${esc(p.name)}</strong>
+    ${p.parent ? `<span class="popup-cite">${esc(inParent(p))}</span>` : ""}
     ${e ? `<span class="popup-cite">${esc(guides[e.guide].short_title)}, ${esc(guides[e.guide].year)}${e.page ? " <span class=sep>·</span> " + esc(pageRef(e.page)) : ""}</span>
       <q>${esc(snippet(e))}</q>` : `<span class="popup-cite">No guide entries yet</span>`}
     ${p.entries.length > 1 ? `<span class="popup-cite">+ ${plural(p.entries.length - 1, "more guide")}</span>` : ""}
@@ -171,7 +180,7 @@ function matches(p) {
   if ($("f-illus").checked && !illustrationsFor(p.id).length) return false;
   if ($("f-visited").checked && !p.visited) return false;
   if (q) {
-    const names = [p.name, p.region, ...p.former_names, ...p.entries.map((e) => e.name_in_guide)];
+    const names = [p.name, p.region, ...p.former_names, ...p.entries.map((e) => e.name_in_guide), ...ancestors(p).map((a) => a.name)];
     if (!names.join(" ").toLowerCase().includes(q)) return false;
   }
   return true;
@@ -187,6 +196,7 @@ function applyFilters() {
   $("count").innerHTML = `${plural(shown.length, "place")} <span class=sep>·</span> ${plural(nGuides, "book")}`;
   $("list").innerHTML = shown.map((p) => `<li><button type="button" data-id="${esc(p.id)}">
       <span class="name">${dot(placeColor(p))}${esc(p.name)}${newBadge(p)}</span>
+      ${p.parent ? `<span class="meta">${esc(inParent(p))}</span>` : ""}
       <span class="meta">${p.entries.length ? p.entries.map(cite).join(" <span class=sep>·</span> ") : "No guide entries yet"}</span>
     </button></li>`).join("") || `<li class="empty">No places match. Try clearing a filter.</li>`;
 }
@@ -246,6 +256,7 @@ function placePage(id) {
   others.delete(p.name);
   const illus = illustrationsFor(id).filter((it) => it.src); // only ones with a picture
   const [first, ...rest] = p.entries;
+  const kids = childrenOf(id);
 
   const entryBlock = (e) => {
     const g = guides[e.guide];
@@ -273,10 +284,11 @@ function placePage(id) {
   const lat = p.lat.toFixed(4), lon = p.lon.toFixed(4);
   const q = encodeURIComponent(p.name);
   return `
-    ${crumbs(["Map", "#/"], ...(p.region ? [[p.region, "#/places"]] : []), [p.name])}
+    ${crumbs(["Map", "#/"], ...(p.region ? [[p.region, "#/places"]] : []), ...ancestors(p).map((a) => [a.name, "#/place/" + a.id]), [p.name])}
     <h1>${esc(p.name)}</h1>
     <p class="meta-line">${[label(p.category), p.region, coordText(p)].filter(Boolean).map(esc).join(" <span class=sep>·</span> ")}
       <span class=sep>·</span> <a href="#/?place=${esc(p.id)}">Show on map</a> <span class=sep>·</span> <a href="#/place/${esc(p.id)}/get-there">Get there</a>
+      ${p.parent ? `<br>In <a href="#/place/${esc(p.parent)}">${esc(places[p.parent].name)}</a>` : ""}
       ${others.size ? `<br>Also called: ${esc([...others].join(", "))}` : ""}</p>
 
     <div class="place-grid">
@@ -285,6 +297,9 @@ function placePage(id) {
         ${illus.length ? `<section class="illus-row">${illus.map((it) => figure(it)).join("")}</section>` : ""}
         ${rest.length ? `<section class="panel"><h2>In other guides</h2>
           ${rest.map((e) => `<details><summary>${esc(guides[e.guide].short_title)}, ${esc(guides[e.guide].year)}${e.page ? ", " + esc(pageRef(e.page)) : ""}</summary>${entryBlock(e)}</details>`).join("")}
+        </section>` : ""}
+        ${kids.length ? `<section class="panel"><h2>Places in ${esc(p.name)}</h2>
+          <ul class="sub-places">${kids.map((k) => `<li>${dot(placeColor(k))}<a href="#/place/${esc(k.id)}">${esc(k.name)}</a>${k.entries.length ? ` <span class="meta">${k.entries.map(cite).join(" <span class=sep>·</span> ")}</span>` : ""}</li>`).join("")}</ul>
         </section>` : ""}
         ${readMore(p.read_more)}
         ${pager}
@@ -314,15 +329,18 @@ function placePage(id) {
 }
 
 function placesPage() {
-  const sorted = [...DATA.places].sort((a, b) => a.name.localeCompare(b.name));
+  // A to Z, with each place's sub-places right under it, indented.
+  const sorted = [];
+  const add = (q, depth) => { sorted.push({ ...q, depth }); for (const k of childrenOf(q.id)) if (depth < 50) add(k, depth + 1); };
+  for (const q of DATA.places.filter((q) => !q.parent || !places[q.parent]).sort((a, b) => a.name.localeCompare(b.name))) add(q, 0);
   return `
     <h1>Places</h1>
-    <p class="lede">Every place on the map, A to Z. ${plural(sorted.length, "place")} so far.</p>
+    <p class="lede">Every place on the map, A to Z, with places inside a town listed under it. ${plural(sorted.length, "place")} so far.</p>
     <label class="field narrow">Search <input type="search" id="places-search" placeholder="Name, then or now"></label>
     <table class="table" id="places-table">
       <thead><tr><th>Place</th><th>Region</th><th>In the guides</th><th>Today</th></tr></thead>
-      <tbody>${sorted.map((p) => `<tr data-names="${esc([p.name, p.region, ...p.former_names, ...p.entries.map((e) => e.name_in_guide)].join(" ").toLowerCase())}">
-        <td>${dot(placeColor(p))}<a href="#/place/${esc(p.id)}">${esc(p.name)}</a>${newBadge(p)}${p.visited ? ' <span class="visited small" title="Visited">✔</span>' : ""}</td>
+      <tbody>${sorted.map((p) => `<tr data-names="${esc([p.name, p.region, ...p.former_names, ...p.entries.map((e) => e.name_in_guide), ...ancestors(p).map((x) => x.name)].join(" ").toLowerCase())}">
+        <td${p.depth ? ` class="sub" style="padding-left:${0.6 + 1.2 * p.depth}em"` : ""}>${p.depth ? '<span class="sub-mark" aria-hidden="true">↳ </span>' : ""}${dot(placeColor(p))}<a href="#/place/${esc(p.id)}">${esc(p.name)}</a>${newBadge(p)}${p.visited ? ' <span class="visited small" title="Visited">✔</span>' : ""}</td>
         <td>${esc(p.region)}</td>
         <td>${p.entries.length ? p.entries.map(cite).join("<br>") : '<span class="meta">None yet</span>'}</td>
         <td>${statusBadge(p)}</td></tr>`).join("")}</tbody>
