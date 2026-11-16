@@ -22,8 +22,8 @@
   kind: Railroad guide
   color: "#4B5632"
   covers: Colorado to Puget Sound
-  scan_url: ""        # Internet Archive link
-  hathitrust_url: ""  # optional
+  scan_url: "" # Internet Archive link
+  hathitrust_url: "" # optional
   summary: >
     A route-by-route guide: each section follows a rail line and describes its
     depots, towns and sights in turn.

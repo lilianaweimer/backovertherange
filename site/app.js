@@ -23,41 +23,72 @@ const STATUS_LABELS = {
 // ---- Small helpers ---------------------------------------------------------
 
 const $ = (id) => document.getElementById(id);
-const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const label = (s) => String(s).replace(/-/g, " ").replace(/^\w/, (c) => c.toUpperCase());
+const esc = (s) =>
+  String(s ?? "").replace(
+    /[&<>"']/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
+  );
+const label = (s) =>
+  String(s)
+    .replace(/-/g, " ")
+    .replace(/^\w/, (c) => c.toUpperCase());
 const pageRef = (p) => (p ? (/[-–,]/.test(p) ? "pp. " : "p. ") + String(p).replace("-", "–") : "");
 const surname = (author) => String(author).trim().split(/\s+/).pop();
-const stripTags = (html) => { const d = document.createElement("div"); d.innerHTML = html; return d.textContent.trim(); };
+const stripTags = (html) => {
+  const d = document.createElement("div");
+  d.innerHTML = html;
+  return d.textContent.trim();
+};
 const firstNum = (p) => parseInt(String(p), 10) || 0;
 const plural = (n, one, many = one + "s") => `${n} ${n === 1 ? one : many}`;
-const fmtDate = (iso) => { const d = new Date(iso + "T12:00:00"); return isNaN(d) ? iso : d.toLocaleDateString("en-US"); };
+const fmtDate = (iso) => {
+  const d = new Date(iso + "T12:00:00");
+  return isNaN(d) ? iso : d.toLocaleDateString("en-US");
+};
 const fmtMonth = (v) => {
   const m = /^(\d{4})-(\d{2})/.exec(v || "");
   if (!m) return v || "";
-  return new Date(+m[1], +m[2] - 1, 15).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  return new Date(+m[1], +m[2] - 1, 15).toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
 };
-const coordText = (p) => `${Math.abs(p.lat).toFixed(2)}° ${p.lat >= 0 ? "N" : "S"}, ${Math.abs(p.lon).toFixed(2)}° ${p.lon >= 0 ? "E" : "W"}`;
+const coordText = (p) =>
+  `${Math.abs(p.lat).toFixed(2)}° ${p.lat >= 0 ? "N" : "S"}, ${Math.abs(p.lon).toFixed(2)}° ${p.lon >= 0 ? "E" : "W"}`;
 
-let DATA, guides = {}, places = {}, collections = {};
+let DATA,
+  guides = {},
+  places = {},
+  collections = {};
 
-function kindsInUse() { return [...new Set(DATA.guides.map((g) => g.kind))].sort((a, b) => a.localeCompare(b)); }
-function guideColor(g) { return g.color || FALLBACK_COLORS[DATA.guides.indexOf(g) % FALLBACK_COLORS.length]; }
+function kindsInUse() {
+  return [...new Set(DATA.guides.map((g) => g.kind))].sort((a, b) => a.localeCompare(b));
+}
+function guideColor(g) {
+  return g.color || FALLBACK_COLORS[DATA.guides.indexOf(g) % FALLBACK_COLORS.length];
+}
 // Sub-places: a place can name another as its 'parent' (Golden Gate Park in San Francisco).
-function childrenOf(id) { return DATA.places.filter((q) => q.parent === id).sort((a, b) => a.name.localeCompare(b.name)); }
+function childrenOf(id) {
+  return DATA.places.filter((q) => q.parent === id).sort((a, b) => a.name.localeCompare(b.name));
+}
 function ancestors(p) {
   const out = [];
   for (let q = places[p.parent]; q && out.length < 50; q = places[q.parent]) out.unshift(q);
   return out;
 }
 const inParent = (p) => (p.parent && places[p.parent] ? `In ${places[p.parent].name}` : "");
-function placeGuides(p) { return [...new Set(p.entries.map((e) => e.guide))]; }
+function placeGuides(p) {
+  return [...new Set(p.entries.map((e) => e.guide))];
+}
 function placeColor(p) {
   const gs = placeGuides(p);
   if (!gs.length) return NO_ENTRY_COLOR;
   return gs.length > 1 ? MULTI_COLOR : guideColor(guides[gs[0]]);
 }
 function illustrationsFor(placeId) {
-  return DATA.illustrations.flatMap((c) => c.items.filter((it) => it.place === placeId).map((it) => ({ ...it, collection: c })));
+  return DATA.illustrations.flatMap((c) =>
+    c.items.filter((it) => it.place === placeId).map((it) => ({ ...it, collection: c })),
+  );
 }
 function cite(e) {
   const g = guides[e.guide];
@@ -68,38 +99,60 @@ function snippet(e, max = 110) {
   const t = stripTags(e.quote_html);
   return t.length > max ? t.slice(0, max).replace(/\s+\S*$/, "") + "…" : t;
 }
-function statusBadge(p) { return `<span class="status status-${esc(p.status)}">${esc(STATUS_LABELS[p.status] || label(p.status))}</span>`; }
-function visitedBadge(p) { return p.visited ? `<span class="visited">✔ Visited ${esc(fmtMonth(p.visited))}</span>` : `<span class="not-visited">Not visited yet</span>`; }
-function dot(color) { return `<span class="dot" style="background:${esc(color)}"></span>`; }
+function statusBadge(p) {
+  return `<span class="status status-${esc(p.status)}">${esc(STATUS_LABELS[p.status] || label(p.status))}</span>`;
+}
+function visitedBadge(p) {
+  return p.visited
+    ? `<span class="visited">✔ Visited ${esc(fmtMonth(p.visited))}</span>`
+    : `<span class="not-visited">Not visited yet</span>`;
+}
+function dot(color) {
+  return `<span class="dot" style="background:${esc(color)}"></span>`;
+}
 function figure(it, cls = "") {
   const g = guides[it.guide];
-  const bits = [g ? `<i>${esc(g.short_title)}</i>` : "", pageRef(it.page), it.material, it.artist].filter(Boolean);
+  const bits = [
+    g ? `<i>${esc(g.short_title)}</i>` : "",
+    pageRef(it.page),
+    it.material,
+    it.artist,
+  ].filter(Boolean);
   return `<figure class="illus ${cls}">
     ${it.src ? `<img src="${esc(it.src)}" alt="${esc(it.title)}" loading="lazy">` : `<div class="img-missing">Image coming soon</div>`}
     <figcaption><strong>${esc(it.title)}</strong>${bits.length ? "<br>" + bits.join(" <span class=sep>·</span> ") : ""}</figcaption>
   </figure>`;
 }
-const underConstruction = (what = "") => `<p class="uc-line"><img src="images/under-construction.gif" alt="Under construction" width="600" height="32">${what ? "<br>" + esc(what) : ""}</p>`;
+const underConstruction = (what = "") =>
+  `<p class="uc-line"><img src="images/under-construction.gif" alt="Under construction" width="600" height="32">${what ? "<br>" + esc(what) : ""}</p>`;
 // Places added in the last 30 days get a NEW! badge.
 const NEW_DAYS = 30;
 const isNew = (p) => p.added && (Date.now() - new Date(p.added + "T12:00:00")) / 864e5 <= NEW_DAYS;
-const newBadge = (p) => (isNew(p) ? ' <img class="new" src="images/new.gif" alt="New" width="31" height="12">' : "");
+const newBadge = (p) =>
+  isNew(p) ? ' <img class="new" src="images/new.gif" alt="New" width="31" height="12">' : "";
 
 // ---- The map ----------------------------------------------------------------
 
-let map = null, cluster = null, markers = {}, mapFitted = false;
+let map = null,
+  cluster = null,
+  markers = {},
+  mapFitted = false;
 
 function setUpMap() {
   if (typeof L === "undefined") {
-    $("map").innerHTML = `<p class="map-error">The map couldn’t load. Check your connection and refresh.</p>`;
+    $("map").innerHTML =
+      `<p class="map-error">The map couldn’t load. Check your connection and refresh.</p>`;
     return;
   }
   map = L.map("map").setView([41, -112], 5);
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 18,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   }).addTo(map);
-  cluster = L.markerClusterGroup ? L.markerClusterGroup({ showCoverageOnHover: false, maxClusterRadius: 36 }) : L.layerGroup();
+  cluster = L.markerClusterGroup
+    ? L.markerClusterGroup({ showCoverageOnHover: false, maxClusterRadius: 36 })
+    : L.layerGroup();
   map.addLayer(cluster);
   for (const p of DATA.places) {
     const m = L.circleMarker([p.lat, p.lon], {
@@ -123,15 +176,21 @@ function popupHtml(p) {
     ${illus ? `<figure><img src="${esc(illus.src)}" alt="${esc(illus.title)}"><figcaption>${esc(illus.title)}${illus.artist ? ", engraved by " + esc(illus.artist) : ""}</figcaption></figure>` : ""}
     <strong class="popup-name">${esc(p.name)}</strong>
     ${p.parent ? `<span class="popup-cite">${esc(inParent(p))}</span>` : ""}
-    ${e ? `<span class="popup-cite">${esc(guides[e.guide].short_title)}, ${esc(guides[e.guide].year)}${e.page ? " <span class=sep>·</span> " + esc(pageRef(e.page)) : ""}</span>
-      <q>${esc(snippet(e))}</q>` : `<span class="popup-cite">No guide entries yet</span>`}
+    ${
+      e
+        ? `<span class="popup-cite">${esc(guides[e.guide].short_title)}, ${esc(guides[e.guide].year)}${e.page ? " <span class=sep>·</span> " + esc(pageRef(e.page)) : ""}</span>
+      <q>${esc(snippet(e))}</q>`
+        : `<span class="popup-cite">No guide entries yet</span>`
+    }
     ${p.entries.length > 1 ? `<span class="popup-cite">+ ${plural(p.entries.length - 1, "more guide")}</span>` : ""}
     <a href="#/place/${esc(p.id)}">Read the entry and today’s notes →</a>
   </div>`;
 }
 
 function renderKey() {
-  const used = DATA.guides.filter((g) => DATA.places.some((p) => placeGuides(p).length === 1 && placeGuides(p)[0] === g.id));
+  const used = DATA.guides.filter((g) =>
+    DATA.places.some((p) => placeGuides(p).length === 1 && placeGuides(p)[0] === g.id),
+  );
   const shown = used.length ? used : DATA.guides;
   $("key").innerHTML = `<strong>Key</strong>
     ${shown.map((g) => `<span>${dot(guideColor(g))}<em>${esc(g.short_title)}</em></span>`).join("")}
@@ -147,17 +206,41 @@ function fillSelect(id, pairs) {
 }
 
 function setUpFilters() {
-  fillSelect("f-kind", kindsInUse().map((k) => [k, k]));
-  fillSelect("f-guide", DATA.guides.map((g) => [g.id, `${g.short_title} (${g.year})`]));
+  fillSelect(
+    "f-kind",
+    kindsInUse().map((k) => [k, k]),
+  );
+  fillSelect(
+    "f-guide",
+    DATA.guides.map((g) => [g.id, `${g.short_title} (${g.year})`]),
+  );
   fillSelect("f-status", Object.entries(STATUS_LABELS));
-  fillSelect("f-tag", [...new Set(DATA.places.flatMap((p) => p.tags))].sort().map((t) => [t, label(t)]));
-  const decades = [...new Set(DATA.guides.map((g) => Math.floor(+g.year / 10) * 10).filter(Boolean))].sort();
-  fillSelect("f-era", decades.map((d) => [String(d), `${d}s`]));
-  for (const id of ["search", "f-kind", "f-guide", "f-status", "f-tag", "f-era", "f-illus", "f-visited"]) {
+  fillSelect(
+    "f-tag",
+    [...new Set(DATA.places.flatMap((p) => p.tags))].sort().map((t) => [t, label(t)]),
+  );
+  const decades = [
+    ...new Set(DATA.guides.map((g) => Math.floor(+g.year / 10) * 10).filter(Boolean)),
+  ].sort();
+  fillSelect(
+    "f-era",
+    decades.map((d) => [String(d), `${d}s`]),
+  );
+  for (const id of [
+    "search",
+    "f-kind",
+    "f-guide",
+    "f-status",
+    "f-tag",
+    "f-era",
+    "f-illus",
+    "f-visited",
+  ]) {
     $(id).addEventListener("input", applyFilters);
   }
   $("clear").addEventListener("click", () => {
-    for (const id of ["search", "f-kind", "f-guide", "f-status", "f-tag", "f-era"]) $(id).value = "";
+    for (const id of ["search", "f-kind", "f-guide", "f-status", "f-tag", "f-era"])
+      $(id).value = "";
     $("f-illus").checked = $("f-visited").checked = false;
     applyFilters();
   });
@@ -169,8 +252,11 @@ function setUpFilters() {
 
 function matches(p) {
   const q = $("search").value.trim().toLowerCase();
-  const kind = $("f-kind").value, guide = $("f-guide").value, status = $("f-status").value;
-  const tag = $("f-tag").value, era = $("f-era").value;
+  const kind = $("f-kind").value,
+    guide = $("f-guide").value,
+    status = $("f-status").value;
+  const tag = $("f-tag").value,
+    era = $("f-era").value;
   const gs = p.entries.map((e) => guides[e.guide]);
   if (kind && !gs.some((g) => g.kind === kind)) return false;
   if (guide && !gs.some((g) => g.id === guide)) return false;
@@ -180,7 +266,13 @@ function matches(p) {
   if ($("f-illus").checked && !illustrationsFor(p.id).length) return false;
   if ($("f-visited").checked && !p.visited) return false;
   if (q) {
-    const names = [p.name, p.region, ...p.former_names, ...p.entries.map((e) => e.name_in_guide), ...ancestors(p).map((a) => a.name)];
+    const names = [
+      p.name,
+      p.region,
+      ...p.former_names,
+      ...p.entries.map((e) => e.name_in_guide),
+      ...ancestors(p).map((a) => a.name),
+    ];
     if (!names.join(" ").toLowerCase().includes(q)) return false;
   }
   return true;
@@ -193,20 +285,33 @@ function applyFilters() {
     for (const p of shown) cluster.addLayer(markers[p.id]);
   }
   const nGuides = new Set(shown.flatMap(placeGuides)).size;
-  $("count").innerHTML = `${plural(shown.length, "place")} <span class=sep>·</span> ${plural(nGuides, "book")}`;
-  $("list").innerHTML = shown.map((p) => `<li><button type="button" data-id="${esc(p.id)}">
+  $("count").innerHTML =
+    `${plural(shown.length, "place")} <span class=sep>·</span> ${plural(nGuides, "book")}`;
+  $("list").innerHTML =
+    shown
+      .map(
+        (p) => `<li><button type="button" data-id="${esc(p.id)}">
       <span class="name">${dot(placeColor(p))}${esc(p.name)}${newBadge(p)}</span>
       ${p.parent ? `<span class="meta">${esc(inParent(p))}</span>` : ""}
       <span class="meta">${p.entries.length ? p.entries.map(cite).join(" <span class=sep>·</span> ") : "No guide entries yet"}</span>
-    </button></li>`).join("") || `<li class="empty">No places match. Try clearing a filter.</li>`;
+    </button></li>`,
+      )
+      .join("") || `<li class="empty">No places match. Try clearing a filter.</li>`;
 }
 
 function showOnMap(id) {
   const m = markers[id];
   if (!m || !map) return;
-  if (location.hash.replace(/\?.*/, "") !== "#/") { location.hash = "#/?place=" + id; return; }
-  const open = () => { map.setView(m.getLatLng(), Math.max(map.getZoom(), 8)); m.openPopup(); };
-  if (cluster.zoomToShowLayer && cluster.hasLayer(m)) cluster.zoomToShowLayer(m, open); else open();
+  if (location.hash.replace(/\?.*/, "") !== "#/") {
+    location.hash = "#/?place=" + id;
+    return;
+  }
+  const open = () => {
+    map.setView(m.getLatLng(), Math.max(map.getZoom(), 8));
+    m.openPopup();
+  };
+  if (cluster.zoomToShowLayer && cluster.hasLayer(m)) cluster.zoomToShowLayer(m, open);
+  else open();
   if (window.innerWidth < 760) $("map").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
@@ -228,11 +333,14 @@ function showMap(params) {
     mapFitted = true;
   }
   const visible = DATA.places.filter(matches);
-  if (params.get("guide") && visible.length) map.fitBounds(L.latLngBounds(visible.map((p) => [p.lat, p.lon])).pad(0.2), { maxZoom: 9 });
+  if (params.get("guide") && visible.length)
+    map.fitBounds(L.latLngBounds(visible.map((p) => [p.lat, p.lon])).pad(0.2), { maxZoom: 9 });
   const want = params.get("place");
   if (want && places[want]) {
     // If the current filters hide this place, clear them so its marker is back on the map.
-    if (!matches(places[want])) { $("clear").click(); }
+    if (!matches(places[want])) {
+      $("clear").click();
+    }
     setTimeout(() => showOnMap(want), 50);
   }
 }
@@ -246,7 +354,7 @@ function readMore(items) {
 }
 
 function crumbs(...parts) {
-  return `<nav class="crumbs" aria-label="Breadcrumb">${parts.map(([text, href]) => href ? `<a href="${esc(href)}">${esc(text)}</a>` : `<span>${esc(text)}</span>`).join(" › ")}</nav>`;
+  return `<nav class="crumbs" aria-label="Breadcrumb">${parts.map(([text, href]) => (href ? `<a href="${esc(href)}">${esc(text)}</a>` : `<span>${esc(text)}</span>`)).join(" › ")}</nav>`;
 }
 
 function placePage(id) {
@@ -268,10 +376,14 @@ function placePage(id) {
   let pager = "";
   if (first) {
     const g = guides[first.guide];
-    const inGuide = DATA.places.flatMap((q) => q.entries.filter((e) => e.guide === g.id).map((e) => ({ q, page: firstNum(e.page) })))
+    const inGuide = DATA.places
+      .flatMap((q) =>
+        q.entries.filter((e) => e.guide === g.id).map((e) => ({ q, page: firstNum(e.page) })),
+      )
       .sort((a, b) => a.page - b.page || a.q.name.localeCompare(b.q.name));
     const i = inGuide.findIndex((x) => x.q.id === id);
-    const prev = inGuide[i - 1], next = inGuide[i + 1];
+    const prev = inGuide[i - 1],
+      next = inGuide[i + 1];
     if (prev || next) {
       pager = `<nav class="pager" aria-label="In ${esc(g.short_title)}">
         ${prev ? `<a href="#/place/${esc(prev.q.id)}">← ${esc(prev.q.name)}</a>` : "<span></span>"}
@@ -281,7 +393,8 @@ function placePage(id) {
     }
   }
 
-  const lat = p.lat.toFixed(4), lon = p.lon.toFixed(4);
+  const lat = p.lat.toFixed(4),
+    lon = p.lon.toFixed(4);
   const q = encodeURIComponent(p.name);
   return `
     ${crumbs(["Map", "#/"], ...(p.regions.length === 1 ? [[p.region, "#/places"]] : []), ...ancestors(p).map((a) => [a.name, "#/place/" + a.id]), [p.name])}
@@ -295,12 +408,20 @@ function placePage(id) {
       <div class="place-main">
         ${first ? `<section class="panel">${entryBlock(first)}</section>` : `<section class="panel"><p class="meta">No guide entries yet.</p></section>`}
         ${illus.length ? `<section class="illus-row">${illus.map((it) => figure(it)).join("")}</section>` : ""}
-        ${rest.length ? `<section class="panel"><h2>In other guides</h2>
+        ${
+          rest.length
+            ? `<section class="panel"><h2>In other guides</h2>
           ${rest.map((e) => `<details><summary>${esc(guides[e.guide].short_title)}, ${esc(guides[e.guide].year)}${e.page ? ", " + esc(pageRef(e.page)) : ""}</summary>${entryBlock(e)}</details>`).join("")}
-        </section>` : ""}
-        ${kids.length ? `<section class="panel"><h2>Places in ${esc(p.name)}</h2>
+        </section>`
+            : ""
+        }
+        ${
+          kids.length
+            ? `<section class="panel"><h2>Places in ${esc(p.name)}</h2>
           <ul class="sub-places">${kids.map((k) => `<li>${dot(placeColor(k))}<a href="#/place/${esc(k.id)}">${esc(k.name)}</a>${k.entries.length ? ` <span class="meta">${k.entries.map(cite).join(" <span class=sep>·</span> ")}</span>` : ""}</li>`).join("")}</ul>
-        </section>` : ""}
+        </section>`
+            : ""
+        }
         ${readMore(p.read_more)}
         ${pager}
       </div>
@@ -331,19 +452,31 @@ function placePage(id) {
 function placesPage() {
   // A to Z, with each place's sub-places right under it, indented.
   const sorted = [];
-  const add = (q, depth) => { sorted.push({ ...q, depth }); for (const k of childrenOf(q.id)) if (depth < 50) add(k, depth + 1); };
-  for (const q of DATA.places.filter((q) => !q.parent || !places[q.parent]).sort((a, b) => a.name.localeCompare(b.name))) add(q, 0);
+  const add = (q, depth) => {
+    sorted.push({ ...q, depth });
+    for (const k of childrenOf(q.id)) if (depth < 50) add(k, depth + 1);
+  };
+  for (const q of DATA.places
+    .filter((q) => !q.parent || !places[q.parent])
+    .sort((a, b) => a.name.localeCompare(b.name)))
+    add(q, 0);
   return `
     <h1>Places</h1>
     <p class="lede">Every place on the map, A to Z, with places inside a town listed under it. ${plural(sorted.length, "place")} so far.</p>
     <label class="field narrow">Search <input type="search" id="places-search" placeholder="Name, then or now"></label>
     <table class="table" id="places-table">
       <thead><tr><th>Place</th><th>Region</th><th>In the guides</th><th>Today</th></tr></thead>
-      <tbody>${sorted.map((p) => `<tr data-names="${esc([p.name, p.region, ...p.former_names, ...p.entries.map((e) => e.name_in_guide), ...ancestors(p).map((x) => x.name)].join(" ").toLowerCase())}">
+      <tbody>${sorted
+        .map(
+          (
+            p,
+          ) => `<tr data-names="${esc([p.name, p.region, ...p.former_names, ...p.entries.map((e) => e.name_in_guide), ...ancestors(p).map((x) => x.name)].join(" ").toLowerCase())}">
         <td${p.depth ? ` class="sub" style="padding-left:${0.6 + 1.2 * p.depth}em"` : ""}>${p.depth ? '<span class="sub-mark" aria-hidden="true">↳ </span>' : ""}${dot(placeColor(p))}<a href="#/place/${esc(p.id)}">${esc(p.name)}</a>${newBadge(p)}${p.visited ? ' <span class="visited small" title="Visited">✔</span>' : ""}</td>
         <td>${esc(p.region)}</td>
         <td>${p.entries.length ? p.entries.map(cite).join("<br>") : '<span class="meta">None yet</span>'}</td>
-        <td>${statusBadge(p)}</td></tr>`).join("")}</tbody>
+        <td>${statusBadge(p)}</td></tr>`,
+        )
+        .join("")}</tbody>
     </table>
     ${sorted.length ? "" : underConstruction("Places are being added.")}`;
 }
@@ -354,27 +487,42 @@ function guidesPage() {
   return `
     <h1>Guides</h1>
     <p class="lede">The books on the map, by kind. Each guide is in the US public domain and links to a full scan.</p>
-    ${kindsInUse().map((k) => `
+    ${kindsInUse()
+      .map(
+        (k) => `
       <section class="panel">
         <h2>${esc(k)}</h2>
-        <ul class="guide-list">${byKind[k].sort((a, b) => a.year - b.year).map((g) => `<li>
+        <ul class="guide-list">${byKind[k]
+          .sort((a, b) => a.year - b.year)
+          .map(
+            (g) => `<li>
           ${dot(guideColor(g))}<a href="#/guide/${esc(g.id)}"><i>${esc(g.short_title)}</i></a>, ${esc(g.author)}, ${esc(g.year)}
-          <span class="meta"> <span class=sep>·</span> ${plural(placesIn(g.id).length, "place")}${g.covers ? " <span class=sep>·</span> " + esc(g.covers) : ""}</span></li>`).join("")}</ul>
-      </section>`).join("")}`;
+          <span class="meta"> <span class=sep>·</span> ${plural(placesIn(g.id).length, "place")}${g.covers ? " <span class=sep>·</span> " + esc(g.covers) : ""}</span></li>`,
+          )
+          .join("")}</ul>
+      </section>`,
+      )
+      .join("")}`;
 }
 
 function placesIn(gid) {
-  return DATA.places.flatMap((p) => p.entries.filter((e) => e.guide === gid).map((e) => ({ p, e })))
+  return DATA.places
+    .flatMap((p) => p.entries.filter((e) => e.guide === gid).map((e) => ({ p, e })))
     .sort((a, b) => firstNum(a.e.page) - firstNum(b.e.page) || a.p.name.localeCompare(b.p.name));
 }
 
 function guidePage(id) {
   const g = guides[id];
   if (!g) return notFound("No guide with that id.");
-  const subtitle = g.title.startsWith(g.short_title) ? g.title.slice(g.short_title.length).replace(/^[:.\s]+/, "") : g.title;
+  const subtitle = g.title.startsWith(g.short_title)
+    ? g.title.slice(g.short_title.length).replace(/^[:.\s]+/, "")
+    : g.title;
   const list = placesIn(id);
-  const shared = [...new Set(DATA.illustrations.flatMap((c) => c.items.filter((it) => it.guide === id).map(() => c.id)))]
-    .map((cid) => collections[cid]);
+  const shared = [
+    ...new Set(
+      DATA.illustrations.flatMap((c) => c.items.filter((it) => it.guide === id).map(() => c.id)),
+    ),
+  ].map((cid) => collections[cid]);
   return `
     ${crumbs(["Guides", "#/guides"], [g.kind, "#/guides"], [g.short_title])}
     <div class="guide-head">
@@ -414,28 +562,48 @@ function guidePage(id) {
 
 function comparePage(params) {
   const a = guides[params.get("a")] ? params.get("a") : DATA.guides[0]?.id;
-  const b = params.get("b") && (params.get("b") === "today" || guides[params.get("b")]) ? params.get("b") : "today";
-  const region = params.get("region") || "", tag = params.get("tag") || "";
+  const b =
+    params.get("b") && (params.get("b") === "today" || guides[params.get("b")])
+      ? params.get("b")
+      : "today";
+  const region = params.get("region") || "",
+    tag = params.get("tag") || "";
   const regions = [...new Set(DATA.places.flatMap((p) => p.regions))].sort();
   const tags = [...new Set(DATA.places.flatMap((p) => p.tags))].sort();
-  const opt = (v, text, cur) => `<option value="${esc(v)}"${v === cur ? " selected" : ""}>${esc(text)}</option>`;
-  const gOpt = (cur) => DATA.guides.map((g) => opt(g.id, `${surname(g.author)}, ${g.short_title} (${g.year})`, cur)).join("");
+  const opt = (v, text, cur) =>
+    `<option value="${esc(v)}"${v === cur ? " selected" : ""}>${esc(text)}</option>`;
+  const gOpt = (cur) =>
+    DATA.guides
+      .map((g) => opt(g.id, `${surname(g.author)}, ${g.short_title} (${g.year})`, cur))
+      .join("");
 
   const inA = (p) => p.entries.some((e) => e.guide === a);
   const inB = (p) => b === "today" || p.entries.some((e) => e.guide === b);
-  const rows = DATA.places.filter((p) => (b === "today" ? inA(p) : inA(p) || inB(p)))
+  const rows = DATA.places
+    .filter((p) => (b === "today" ? inA(p) : inA(p) || inB(p)))
     .filter((p) => (!region || p.regions.includes(region)) && (!tag || p.tags.includes(tag)))
-    .sort((x, y) => firstNum(x.entries.find((e) => e.guide === a)?.page ?? 1e9) - firstNum(y.entries.find((e) => e.guide === a)?.page ?? 1e9) || x.name.localeCompare(y.name));
+    .sort(
+      (x, y) =>
+        firstNum(x.entries.find((e) => e.guide === a)?.page ?? 1e9) -
+          firstNum(y.entries.find((e) => e.guide === a)?.page ?? 1e9) ||
+        x.name.localeCompare(y.name),
+    );
 
   const count = (statuses) => rows.filter((p) => statuses.includes(p.status)).length;
   const cell = (p, gid) => {
     const e = p.entries.find((x) => x.guide === gid);
-    return e ? `<q>${esc(snippet(e, 140))}</q> <span class="meta">${esc(pageRef(e.page))}</span>` : `<span class="meta">Not in this guide</span>`;
+    return e
+      ? `<q>${esc(snippet(e, 140))}</q> <span class="meta">${esc(pageRef(e.page))}</span>`
+      : `<span class="meta">Not in this guide</span>`;
   };
   const today = (p) => `${statusBadge(p)} ${p.status_summary ? esc(p.status_summary) : ""}`;
   const gA = guides[a];
   const rowsA = rows.filter(inA);
-  const pages = rowsA.map((p) => p.entries.find((e) => e.guide === a)).filter(Boolean).map((e) => firstNum(e.page)).filter(Boolean);
+  const pages = rowsA
+    .map((p) => p.entries.find((e) => e.guide === a))
+    .filter(Boolean)
+    .map((e) => firstNum(e.page))
+    .filter(Boolean);
 
   return `
     <h1>Then and now</h1>
@@ -446,7 +614,9 @@ function comparePage(params) {
       <label class="field">Places <select name="region">${opt("", "Everywhere", region)}${regions.map((r) => opt(r, r, region)).join("")}</select></label>
       <label class="field">Theme <select name="tag">${opt("", "Any theme", tag)}${tags.map((t) => opt(t, label(t), tag)).join("")}</select></label>
     </form>
-    ${gA ? `<div class="two-col compare-top">
+    ${
+      gA
+        ? `<div class="two-col compare-top">
       <section class="panel">
         <h2>These places today</h2>
         <dl class="glance">
@@ -464,21 +634,35 @@ function comparePage(params) {
     </div>
     <table class="table compare-table">
       <thead><tr><th>Place</th><th>${esc(surname(gA.author))}, ${esc(gA.year)}</th><th>${b === "today" ? "Today" : esc(surname(guides[b].author) + ", " + guides[b].year)}</th></tr></thead>
-      <tbody>${rows.map((p) => `<tr><td><a href="#/place/${esc(p.id)}">${esc(p.name)}</a></td><td>${cell(p, a)}</td><td>${b === "today" ? today(p) : cell(p, b)}</td></tr>`).join("")
-        || `<tr><td colspan="3" class="meta">No places match.</td></tr>`}</tbody>
-    </table>` : underConstruction("Add a guide to compare.")}`;
+      <tbody>${
+        rows
+          .map(
+            (p) =>
+              `<tr><td><a href="#/place/${esc(p.id)}">${esc(p.name)}</a></td><td>${cell(p, a)}</td><td>${b === "today" ? today(p) : cell(p, b)}</td></tr>`,
+          )
+          .join("") || `<tr><td colspan="3" class="meta">No places match.</td></tr>`
+      }</tbody>
+    </table>`
+        : underConstruction("Add a guide to compare.")
+    }`;
 }
 
 function illustrationsPage() {
   return `
     <h1>Illustrations</h1>
     <p class="lede">Engravings, maps and other illustrations from the guides, grouped by collection. Each illustration is linked to the place it shows, so it also appears on that place’s page and in its map popup.</p>
-    <section class="cards">${DATA.illustrations.map((c) => `
+    <section class="cards">${
+      DATA.illustrations
+        .map(
+          (c) => `
       <a class="card" href="#/illustrations/${esc(c.id)}">
-        ${c.cover ? `<img src="${esc(c.cover)}" alt="">` : (c.items.find((it) => it.src) ? `<img src="${esc(c.items.find((it) => it.src).src)}" alt="">` : `<div class="img-missing">Image coming soon</div>`)}
+        ${c.cover ? `<img src="${esc(c.cover)}" alt="">` : c.items.find((it) => it.src) ? `<img src="${esc(c.items.find((it) => it.src).src)}" alt="">` : `<div class="img-missing">Image coming soon</div>`}
         <h2>${esc(c.title)}</h2>
         <p class="meta">${[plural(c.items.length, "item"), c.holding, c.dates].filter(Boolean).map(esc).join(" <span class=sep>·</span> ")}</p>
-      </a>`).join("") || underConstruction("Collections are being added.")}
+      </a>`,
+        )
+        .join("") || underConstruction("Collections are being added.")
+    }
     </section>
     <p class="meta">On the map, tick “Only places with illustrations” to see where they are.</p>`;
 }
@@ -498,14 +682,27 @@ function collectionPage(id) {
       </div>
       ${lead ? figure(lead, "lead") : ""}
     </div>
-    ${books.length ? `<section class="panel"><h2>Books that use them</h2>
+    ${
+      books.length
+        ? `<section class="panel"><h2>Books that use them</h2>
       <table class="table"><thead><tr><th>Book</th><th>Year</th><th>Publisher</th><th>Illustrations</th></tr></thead>
       <tbody>${books.map((g) => `<tr><td><a href="#/guide/${esc(g.id)}"><i>${esc(g.short_title)}</i></a>, ${esc(g.author)}</td><td>${esc(g.year)}</td><td>${esc(g.publisher)}</td><td>${c.items.filter((it) => it.guide === g.id).length}</td></tr>`).join("")}</tbody></table>
-    </section>` : ""}
+    </section>`
+        : ""
+    }
     <section class="panel">
       <h2>The illustrations</h2>
-      ${c.items.length ? `<div class="illus-grid">${c.items.map((it) => it.place && places[it.place]
-        ? `<a href="#/place/${esc(it.place)}" class="illus-link">${figure(it)}</a>` : figure(it)).join("")}</div>` : underConstruction("Illustrations are being added.")}
+      ${
+        c.items.length
+          ? `<div class="illus-grid">${c.items
+              .map((it) =>
+                it.place && places[it.place]
+                  ? `<a href="#/place/${esc(it.place)}" class="illus-link">${figure(it)}</a>`
+                  : figure(it),
+              )
+              .join("")}</div>`
+          : underConstruction("Illustrations are being added.")
+      }
     </section>`;
 }
 
@@ -514,9 +711,10 @@ function textPage(name, section) {
   const holder = document.createElement("div");
   holder.innerHTML = html;
   const heads = [...holder.querySelectorAll("h2[id]")];
-  const side = heads.length > 3
-    ? `<nav class="side-menu" aria-label="On this page"><ul>${heads.map((h) => `<li><a href="#/${name}/${esc(h.id)}">${esc(h.textContent)}</a></li>`).join("")}</ul></nav>`
-    : "";
+  const side =
+    heads.length > 3
+      ? `<nav class="side-menu" aria-label="On this page"><ul>${heads.map((h) => `<li><a href="#/${name}/${esc(h.id)}">${esc(h.textContent)}</a></li>`).join("")}</ul></nav>`
+      : "";
   return `<div class="text-page${side ? " with-side" : ""}">${side}<article class="prose">${html}</article></div>`;
 }
 
@@ -533,28 +731,65 @@ function route() {
   const [section, id, sub] = path.split("/").map(decodeURIComponent);
 
   // Old links like #seattle-wa still open the place.
-  if (section && !id && places[section]) { location.replace("#/place/" + section); return; }
+  if (section && !id && places[section]) {
+    location.replace("#/place/" + section);
+    return;
+  }
 
   for (const a of document.querySelectorAll(".main-nav a")) {
     const nav = a.dataset.nav;
-    const on = (nav === "map" && !section) || nav === section || (nav === "places" && section === "place") || (nav === "guides" && section === "guide");
-    if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+    const on =
+      (nav === "map" && !section) ||
+      nav === section ||
+      (nav === "places" && section === "place") ||
+      (nav === "guides" && section === "guide");
+    if (on) a.setAttribute("aria-current", "page");
+    else a.removeAttribute("aria-current");
   }
 
-  if (!section) { document.title = "Back Over the Range"; showMap(params); return; }
+  if (!section) {
+    document.title = "Back Over the Range";
+    showMap(params);
+    return;
+  }
 
   $("map-page").hidden = true;
   let html, title;
   switch (section) {
-    case "place": html = placePage(id); title = places[id]?.name; break;
-    case "places": html = placesPage(); title = "Places"; break;
-    case "guides": html = guidesPage(); title = "Guides"; break;
-    case "guide": html = guidePage(id); title = guides[id]?.short_title; break;
-    case "compare": html = comparePage(params); title = "Compare"; break;
-    case "illustrations": html = id ? collectionPage(id) : illustrationsPage(); title = id ? collections[id]?.title : "Illustrations"; break;
-    case "about": html = textPage("about"); title = "About"; break;
-    case "learn-more": html = textPage("learn-more"); title = "Learn more"; break;
-    default: html = notFound("That page doesn’t exist.");
+    case "place":
+      html = placePage(id);
+      title = places[id]?.name;
+      break;
+    case "places":
+      html = placesPage();
+      title = "Places";
+      break;
+    case "guides":
+      html = guidesPage();
+      title = "Guides";
+      break;
+    case "guide":
+      html = guidePage(id);
+      title = guides[id]?.short_title;
+      break;
+    case "compare":
+      html = comparePage(params);
+      title = "Compare";
+      break;
+    case "illustrations":
+      html = id ? collectionPage(id) : illustrationsPage();
+      title = id ? collections[id]?.title : "Illustrations";
+      break;
+    case "about":
+      html = textPage("about");
+      title = "About";
+      break;
+    case "learn-more":
+      html = textPage("learn-more");
+      title = "Learn more";
+      break;
+    default:
+      html = notFound("That page doesn’t exist.");
   }
   document.title = (title ? title + " · " : "") + "Back Over the Range";
   $("page").innerHTML = html;
@@ -577,15 +812,20 @@ document.addEventListener("click", (ev) => {
   const copy = ev.target.closest("[data-copy]");
   if (copy) {
     const text = copy.dataset.copy;
-    const done = () => { copy.textContent = "Copied!"; setTimeout(() => (copy.textContent = "Copy coordinates"), 1600); };
-    if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, () => prompt("Copy these coordinates:", text));
+    const done = () => {
+      copy.textContent = "Copied!";
+      setTimeout(() => (copy.textContent = "Copy coordinates"), 1600);
+    };
+    if (navigator.clipboard)
+      navigator.clipboard.writeText(text).then(done, () => prompt("Copy these coordinates:", text));
     else prompt("Copy these coordinates:", text);
   }
 });
 document.addEventListener("input", (ev) => {
   if (ev.target.id === "places-search") {
     const q = ev.target.value.trim().toLowerCase();
-    for (const tr of document.querySelectorAll("#places-table tbody tr")) tr.hidden = q && !tr.dataset.names.includes(q);
+    for (const tr of document.querySelectorAll("#places-table tbody tr"))
+      tr.hidden = q && !tr.dataset.names.includes(q);
   }
 });
 document.addEventListener("change", (ev) => {
@@ -602,7 +842,8 @@ function showFrame(data) {
     $("marquee").textContent = "★ " + s.marquee.join(" ★ ") + " ★";
     $("marquee").hidden = false;
   }
-  if (data.updated) $("updated").innerHTML = " <span class=sep>·</span> Last updated " + fmtDate(data.updated);
+  if (data.updated)
+    $("updated").innerHTML = " <span class=sep>·</span> Last updated " + fmtDate(data.updated);
 
   const code = s.goatcounter;
   if (!code) return;
@@ -619,7 +860,11 @@ function showFrame(data) {
     .then((res) => {
       const digits = String(res.count || "").replace(/\D/g, "");
       if (!digits) return;
-      $("visitor-digits").innerHTML = digits.padStart(6, "0").split("").map((c) => `<span>${c}</span>`).join("");
+      $("visitor-digits").innerHTML = digits
+        .padStart(6, "0")
+        .split("")
+        .map((c) => `<span>${c}</span>`)
+        .join("");
       $("visitors").hidden = false;
     })
     .catch(() => {}); // the counter is decoration; never break the site over it
@@ -645,6 +890,7 @@ fetch("data.json")
     route();
   })
   .catch((err) => {
-    $("page").innerHTML = `<p class="panel">Could not load the data (${esc(err.message)}). If you opened index.html directly, run the local preview instead (see README).</p>`;
+    $("page").innerHTML =
+      `<p class="panel">Could not load the data (${esc(err.message)}). If you opened index.html directly, run the local preview instead (see README).</p>`;
     console.error(err);
   });
