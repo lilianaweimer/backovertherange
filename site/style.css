@@ -263,3 +263,8 @@ img.new { vertical-align: middle; }
 
 /* Cite this page */
 .cite-text { font-family: "EB Garamond", Georgia, serif; font-size: 1.05rem; overflow-wrap: anywhere; }
+
+/* Sub-places */
+.sub-places { list-style: none; padding: 0; margin: 0; }
+.sub-places li { margin: 0.35em 0; }
+.sub-mark { color: var(--ink-mute); }
