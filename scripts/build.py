@@ -237,7 +237,8 @@ def load_places():
             "id": pid,
             "name": name,
             "parent": parent,
-            "region": plain(fields.get("region")),
+            "region": ", ".join(as_list(fields.get("region"))),  # for display
+            "regions": as_list(fields.get("region")),  # one or more, e.g. [Montana, North Dakota]
             "lat": lat,
             "lon": lon,
             "precision": precision,

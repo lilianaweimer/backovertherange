@@ -284,7 +284,7 @@ function placePage(id) {
   const lat = p.lat.toFixed(4), lon = p.lon.toFixed(4);
   const q = encodeURIComponent(p.name);
   return `
-    ${crumbs(["Map", "#/"], ...(p.region ? [[p.region, "#/places"]] : []), ...ancestors(p).map((a) => [a.name, "#/place/" + a.id]), [p.name])}
+    ${crumbs(["Map", "#/"], ...(p.regions.length === 1 ? [[p.region, "#/places"]] : []), ...ancestors(p).map((a) => [a.name, "#/place/" + a.id]), [p.name])}
     <h1>${esc(p.name)}</h1>
     <p class="meta-line">${[label(p.category), p.region, coordText(p)].filter(Boolean).map(esc).join(" <span class=sep>·</span> ")}
       <span class=sep>·</span> <a href="#/?place=${esc(p.id)}">Show on map</a> <span class=sep>·</span> <a href="#/place/${esc(p.id)}/get-there">Get there</a>
@@ -431,7 +431,7 @@ function comparePage(params) {
   const a = guides[params.get("a")] ? params.get("a") : DATA.guides[0]?.id;
   const b = params.get("b") && (params.get("b") === "today" || guides[params.get("b")]) ? params.get("b") : "today";
   const region = params.get("region") || "", tag = params.get("tag") || "";
-  const regions = [...new Set(DATA.places.map((p) => p.region).filter(Boolean))].sort();
+  const regions = [...new Set(DATA.places.flatMap((p) => p.regions))].sort();
   const tags = [...new Set(DATA.places.flatMap((p) => p.tags))].sort();
   const opt = (v, text, cur) => `<option value="${esc(v)}"${v === cur ? " selected" : ""}>${esc(text)}</option>`;
   const gOpt = (cur) => DATA.guides.map((g) => opt(g.id, `${surname(g.author)}, ${g.short_title} (${g.year})`, cur)).join("");
@@ -439,7 +439,7 @@ function comparePage(params) {
   const inA = (p) => p.entries.some((e) => e.guide === a);
   const inB = (p) => b === "today" || p.entries.some((e) => e.guide === b);
   const rows = DATA.places.filter((p) => (b === "today" ? inA(p) : inA(p) || inB(p)))
-    .filter((p) => (!region || p.region === region) && (!tag || p.tags.includes(tag)))
+    .filter((p) => (!region || p.regions.includes(region)) && (!tag || p.tags.includes(tag)))
     .sort((x, y) => firstNum(x.entries.find((e) => e.guide === a)?.page ?? 1e9) - firstNum(y.entries.find((e) => e.guide === a)?.page ?? 1e9) || x.name.localeCompare(y.name));
 
   const count = (statuses) => rows.filter((p) => statuses.includes(p.status)).length;
