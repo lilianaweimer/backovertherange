@@ -343,6 +343,11 @@ function applyFilters() {
     }
     onMap = want;
   }
+  // Say how many of the folded-away filters are in use, so a hidden filter is never a surprise.
+  const hiddenOn =
+    ["f-status", "f-tag", "f-era"].filter((id) => $(id).value).length +
+    ["f-illus", "f-visited"].filter((id) => $(id).checked).length;
+  $("more-count").textContent = hiddenOn ? `(${hiddenOn} on)` : "";
   const nGuides = new Set(shown.flatMap(placeGuides)).size;
   $("count").innerHTML =
     `${plural(shown.length, "place")} <span class=sep>·</span> ${plural(nGuides, "book")}`;
