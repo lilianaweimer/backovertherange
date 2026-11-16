@@ -317,8 +317,7 @@ button.btn {
 
 .map-page {
   display: flex;
-  flex-wrap: wrap;
-  min-height: calc(100vh - 180px);
+  height: max(640px, calc(100vh - 180px));
 }
 .map-side {
   flex: 1 1 320px;
@@ -327,6 +326,7 @@ button.btn {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  min-height: 0;
   border-right: 4px ridge #9dbf8e;
   background: rgba(255, 250, 234, 0.85);
 }
@@ -369,8 +369,14 @@ button.btn {
 }
 .place-list {
   list-style: none;
-  margin: 0;
-  padding: 0;
+  margin: 0 -6px 0 0;
+  padding: 0 6px 0 0;
+  /* Fills the rest of the sidebar and scrolls once there are more places than fit. */
+  flex: 1 1 0;
+  min-height: 180px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-bottom: 1px solid var(--rule);
 }
 .place-list button {
   display: flex;
@@ -861,8 +867,14 @@ img.new {
   }
   .map-page {
     flex-direction: column-reverse;
+    height: auto;
+  }
+  .place-list {
+    flex: none;
+    max-height: 50vh;
   }
   .map-side {
+    flex: none;
     max-width: none;
     border-right: 0;
     border-top: 4px ridge #9dbf8e;
@@ -918,4 +930,120 @@ img.new {
 }
 .sub-mark {
   color: var(--ink-mute);
+}
+
+/* ---- Entries: one section per guide, excerpts, fact boxes, tables ---- */
+.guide-count {
+  font-family: var(--heading);
+  font-size: 0.9rem;
+  color: var(--ink-mute);
+  margin: 0 0 0.6rem;
+}
+details.guide-section {
+  padding: 0;
+  overflow: hidden;
+  border-top: 4px ridge #9dbf8e;
+}
+.guide-section > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 14px 20px;
+  display: flex;
+  gap: 4px 10px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  background: var(--sage-light);
+}
+.guide-section[open] > summary {
+  border-bottom: 1px solid var(--rule-soft);
+}
+.guide-section > summary::-webkit-details-marker {
+  display: none;
+}
+.guide-section > summary::before {
+  content: "▸";
+  color: var(--ink-mute);
+  font-size: 0.9em;
+}
+.guide-section[open] > summary::before {
+  content: "▾";
+}
+.gs-title {
+  font-family: var(--heading);
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+.gs-meta {
+  font-family: var(--heading);
+  font-size: 0.85rem;
+  color: var(--ink-mute);
+}
+.gs-body {
+  padding: 16px 20px 6px;
+}
+.entry + .entry {
+  border-top: 1px dashed var(--rule);
+  padding-top: 0.8rem;
+}
+.entry-label {
+  font-size: 0.95rem;
+  margin: 0 0 0.4rem;
+  color: var(--ink-soft);
+}
+.entry-label .sep {
+  margin: 0 0.45em 0 0.2em; /* the bold dot glyph sits off-centre */
+  font-weight: 400;
+}
+.excerpt p:last-child::after {
+  content: " …”";
+}
+.entry .more {
+  margin: 0.4rem 0 0.8rem;
+}
+.facts-box {
+  display: inline-block;
+  border: 2px solid var(--ink);
+  padding: 8px 18px;
+  margin: 0 0 0.8rem;
+  text-align: center;
+  font-family: var(--heading);
+  font-weight: 700;
+  background: var(--paper);
+}
+.facts-box p {
+  margin: 0.2rem 0;
+}
+.facts-box p:first-child {
+  font-size: 1.1rem;
+}
+.entry-illus {
+  margin: 0 0 0.8rem;
+}
+.entry-illus img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--rule);
+}
+.entry-illus figcaption,
+.entry-illus-note {
+  font-family: var(--body);
+  font-style: italic;
+  color: var(--ink-soft);
+}
+.quote table {
+  border-collapse: collapse;
+  margin: 0.4rem 0;
+  font-size: 0.95em;
+}
+.quote th,
+.quote td {
+  padding: 2px 14px 2px 0;
+  border-bottom: 1px dotted var(--rule);
+  text-align: left;
+  vertical-align: top;
+}
+.quote td:last-child,
+.quote th:last-child {
+  text-align: right;
+  padding-right: 0;
 }

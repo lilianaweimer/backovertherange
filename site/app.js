@@ -90,13 +90,35 @@ function illustrationsFor(placeId) {
     c.items.filter((it) => it.place === placeId).map((it) => ({ ...it, collection: c })),
   );
 }
-function cite(e) {
-  const g = guides[e.guide];
-  return `${esc(surname(g.author))}, ${esc(g.year)}${e.page ? " <span class=sep>·</span> " + esc(pageRef(e.page)) : ""}`;
+// A place's entries, one group per guide (oldest guide first, then by page).
+function byGuide(p) {
+  const groups = new Map();
+  for (const e of p.entries) {
+    if (!groups.has(e.guide)) groups.set(e.guide, []);
+    groups.get(e.guide).push(e);
+  }
+  return [...groups].map(([gid, es]) => ({ g: guides[gid], es }));
+}
+// "p. 11", or "pp. 11, 17–22" for several entries in one guide.
+function pagesText(es) {
+  const ps = es.map((e) => e.page).filter(Boolean);
+  if (!ps.length) return "";
+  if (ps.length === 1) return pageRef(ps[0]);
+  return "pp. " + ps.map((x) => String(x).replace("-", "–")).join(", ");
+}
+// "Wood, 1889 · pp. 11, 17–22 · Ingersoll, 1885 · p. 4" for lists.
+function citeAll(p, sep = " <span class=sep>·</span> ") {
+  return byGuide(p)
+    .map(({ g, es }) => {
+      const pages = pagesText(es);
+      return `${esc(surname(g.author))}, ${esc(g.year)}${pages ? " <span class=sep>·</span> " + esc(pages) : ""}`;
+    })
+    .join(sep);
 }
 function snippet(e, max = 110) {
   if (e.summary) return e.summary;
-  const t = stripTags(e.quote_html);
+  if (!e.quote_html && e.illustration) return `Illustration: ${e.illustration}`;
+  const t = stripTags(e.excerpt_html || e.quote_html);
   return t.length > max ? t.slice(0, max).replace(/\s+\S*$/, "") + "…" : t;
 }
 function statusBadge(p) {
@@ -170,8 +192,10 @@ function setUpMap() {
 }
 
 function popupHtml(p) {
-  const illus = illustrationsFor(p.id).find((it) => it.src);
   const e = p.entries[0];
+  const illus =
+    illustrationsFor(p.id).find((it) => it.src) ||
+    (e && e.image ? { src: e.image, title: e.illustration || p.name } : null);
   return `<div class="popup">
     ${illus ? `<figure><img src="${esc(illus.src)}" alt="${esc(illus.title)}"><figcaption>${esc(illus.title)}${illus.artist ? ", engraved by " + esc(illus.artist) : ""}</figcaption></figure>` : ""}
     <strong class="popup-name">${esc(p.name)}</strong>
@@ -182,7 +206,7 @@ function popupHtml(p) {
       <q>${esc(snippet(e))}</q>`
         : `<span class="popup-cite">No guide entries yet</span>`
     }
-    ${p.entries.length > 1 ? `<span class="popup-cite">+ ${plural(p.entries.length - 1, "more guide")}</span>` : ""}
+    ${byGuide(p).length > 1 ? `<span class="popup-cite">+ ${plural(byGuide(p).length - 1, "more guide")}</span>` : ""}
     <a href="#/place/${esc(p.id)}">Read the entry and today’s notes →</a>
   </div>`;
 }
@@ -293,7 +317,7 @@ function applyFilters() {
         (p) => `<li><button type="button" data-id="${esc(p.id)}">
       <span class="name">${dot(placeColor(p))}${esc(p.name)}${newBadge(p)}</span>
       ${p.parent ? `<span class="meta">${esc(inParent(p))}</span>` : ""}
-      <span class="meta">${p.entries.length ? p.entries.map(cite).join(" <span class=sep>·</span> ") : "No guide entries yet"}</span>
+      <span class="meta">${p.entries.length ? citeAll(p) : "No guide entries yet"}</span>
     </button></li>`,
       )
       .join("") || `<li class="empty">No places match. Try clearing a filter.</li>`;
@@ -363,13 +387,47 @@ function placePage(id) {
   const others = new Set([...p.former_names, ...p.entries.map((e) => e.name_in_guide)]);
   others.delete(p.name);
   const illus = illustrationsFor(id).filter((it) => it.src); // only ones with a picture
-  const [first, ...rest] = p.entries;
+  const first = p.entries[0];
+  const groups = byGuide(p);
   const kids = childrenOf(id);
 
-  const entryBlock = (e) => {
+  // One passage: its label (when a guide has several), fact box, picture, quote and source.
+  const entryBlock = (e, several) => {
     const g = guides[e.guide];
-    return `<blockquote class="quote">${e.quote_html}</blockquote>
-      <p class="source">${esc(g.author)}, <a href="#/guide/${esc(g.id)}"><i>${esc(g.short_title)}</i></a> (${esc(g.year)})${e.page ? ", " + esc(pageRef(e.page)) : ""}${e.section ? " <span class=sep>·</span> " + esc(e.section) : ""}${e.name_in_guide !== p.name ? ` <span class=sep>·</span> as “${esc(e.name_in_guide)}”` : ""}${g.scan_url ? ` <span class=sep>·</span> <a href="${esc(g.scan_url)}" target="_blank" rel="noopener">Read the page scan ↗</a>` : ""}</p>`;
+    const pages = pageRef(e.page);
+    const facts = e.facts.length
+      ? `<div class="facts-box">${e.facts.map((f) => `<p>${esc(f)}</p>`).join("")}</div>`
+      : "";
+    const pic = !e.illustration
+      ? ""
+      : e.image
+        ? `<figure class="entry-illus"><img src="${esc(e.image)}" alt="${esc(e.illustration)}" loading="lazy"><figcaption>${esc(e.illustration)}</figcaption></figure>`
+        : `<p class="entry-illus-note">Shown in an illustration: “${esc(e.illustration)}”</p>`;
+    const more = `Read the full passage${pages ? ` (${pages})` : ""} ▾`;
+    const quote = !e.quote_html
+      ? ""
+      : e.excerpt_html
+        ? `<blockquote class="quote"><div class="excerpt">${e.excerpt_html}</div><div class="full" hidden>${e.quote_html}</div></blockquote>
+           <p class="more"><button type="button" class="btn" data-passage data-more="${esc(more)}" aria-expanded="false">${esc(more)}</button></p>`
+        : `<blockquote class="quote">${e.quote_html}</blockquote>`;
+    return `<div class="entry">
+      ${several ? `<h3 class="entry-label">${[pages, e.section].filter(Boolean).map(esc).join('<span class="sep">·</span>')}</h3>` : ""}
+      ${facts}${pic}${quote}
+      <p class="source">${esc(g.author)}, <a href="#/guide/${esc(g.id)}"><i>${esc(g.short_title)}</i></a> (${esc(g.year)})${e.page ? ", " + esc(pageRef(e.page)) : ""}${e.section ? " <span class=sep>·</span> " + esc(e.section) : ""}${e.name_in_guide !== p.name ? ` <span class=sep>·</span> as “${esc(e.name_in_guide)}”` : ""}${g.scan_url ? ` <span class=sep>·</span> <a href="${esc(g.scan_url)}" target="_blank" rel="noopener">Read the page scan ↗</a>` : ""}</p>
+    </div>`;
+  };
+
+  // One section per guide; the first is open.
+  const guideSection = ({ g, es }, i) => {
+    const several = es.length > 1;
+    const meta = [`${surname(g.author)}, ${g.year}`, pagesText(es), several ? "" : es[0].section]
+      .filter(Boolean)
+      .map(esc)
+      .join(" <span class=sep>·</span> ");
+    return `<details class="panel guide-section"${i === 0 ? " open" : ""}>
+      <summary><span class="gs-title"><i>${esc(g.short_title)}</i></span> <span class="gs-meta">${meta}</span></summary>
+      <div class="gs-body">${es.map((e) => entryBlock(e, several)).join("")}</div>
+    </details>`;
   };
 
   // Next and previous place in the same guide, by page.
@@ -378,7 +436,10 @@ function placePage(id) {
     const g = guides[first.guide];
     const inGuide = DATA.places
       .flatMap((q) =>
-        q.entries.filter((e) => e.guide === g.id).map((e) => ({ q, page: firstNum(e.page) })),
+        q.entries
+          .filter((e) => e.guide === g.id)
+          .slice(0, 1) // a place with several entries is listed once, at its first page
+          .map((e) => ({ q, page: firstNum(e.page) })),
       )
       .sort((a, b) => a.page - b.page || a.q.name.localeCompare(b.q.name));
     const i = inGuide.findIndex((x) => x.q.id === id);
@@ -406,19 +467,13 @@ function placePage(id) {
 
     <div class="place-grid">
       <div class="place-main">
-        ${first ? `<section class="panel">${entryBlock(first)}</section>` : `<section class="panel"><p class="meta">No guide entries yet.</p></section>`}
+        ${groups.length > 1 ? `<p class="guide-count">In ${groups.length} guides</p>` : ""}
+        ${groups.length ? groups.map(guideSection).join("") : `<section class="panel"><p class="meta">No guide entries yet.</p></section>`}
         ${illus.length ? `<section class="illus-row">${illus.map((it) => figure(it)).join("")}</section>` : ""}
-        ${
-          rest.length
-            ? `<section class="panel"><h2>In other guides</h2>
-          ${rest.map((e) => `<details><summary>${esc(guides[e.guide].short_title)}, ${esc(guides[e.guide].year)}${e.page ? ", " + esc(pageRef(e.page)) : ""}</summary>${entryBlock(e)}</details>`).join("")}
-        </section>`
-            : ""
-        }
         ${
           kids.length
             ? `<section class="panel"><h2>Places in ${esc(p.name)}</h2>
-          <ul class="sub-places">${kids.map((k) => `<li>${dot(placeColor(k))}<a href="#/place/${esc(k.id)}">${esc(k.name)}</a>${k.entries.length ? ` <span class="meta">${k.entries.map(cite).join(" <span class=sep>·</span> ")}</span>` : ""}</li>`).join("")}</ul>
+          <ul class="sub-places">${kids.map((k) => `<li>${dot(placeColor(k))}<a href="#/place/${esc(k.id)}">${esc(k.name)}</a>${k.entries.length ? ` <span class="meta">${citeAll(k)}</span>` : ""}</li>`).join("")}</ul>
         </section>`
             : ""
         }
@@ -473,7 +528,7 @@ function placesPage() {
           ) => `<tr data-names="${esc([p.name, p.region, ...p.former_names, ...p.entries.map((e) => e.name_in_guide), ...ancestors(p).map((x) => x.name)].join(" ").toLowerCase())}">
         <td${p.depth ? ` class="sub" style="padding-left:${0.6 + 1.2 * p.depth}em"` : ""}>${p.depth ? '<span class="sub-mark" aria-hidden="true">↳ </span>' : ""}${dot(placeColor(p))}<a href="#/place/${esc(p.id)}">${esc(p.name)}</a>${newBadge(p)}${p.visited ? ' <span class="visited small" title="Visited">✔</span>' : ""}</td>
         <td>${esc(p.region)}</td>
-        <td>${p.entries.length ? p.entries.map(cite).join("<br>") : '<span class="meta">None yet</span>'}</td>
+        <td>${p.entries.length ? citeAll(p, "<br>") : '<span class="meta">None yet</span>'}</td>
         <td>${statusBadge(p)}</td></tr>`,
         )
         .join("")}</tbody>
@@ -505,9 +560,14 @@ function guidesPage() {
       .join("")}`;
 }
 
+// Each place in a guide once, at its first page; 'rest' holds any later entries.
 function placesIn(gid) {
   return DATA.places
-    .flatMap((p) => p.entries.filter((e) => e.guide === gid).map((e) => ({ p, e })))
+    .map((p) => {
+      const [e, ...rest] = p.entries.filter((x) => x.guide === gid);
+      return e && { p, e, rest };
+    })
+    .filter(Boolean)
     .sort((a, b) => firstNum(a.e.page) - firstNum(b.e.page) || a.p.name.localeCompare(b.p.name));
 }
 
@@ -542,7 +602,7 @@ function guidePage(id) {
     <div class="two-col">
       <section class="panel">
         <h2>Places in this book, in page order</h2>
-        ${list.length ? `<ol class="page-order">${list.map(({ p, e }) => `<li><a href="#/place/${esc(p.id)}">${esc(p.name)}</a> <span class="meta">${esc(pageRef(e.page))}</span></li>`).join("")}</ol>` : underConstruction("Entries are being added.")}
+        ${list.length ? `<ol class="page-order">${list.map(({ p, e, rest }) => `<li><a href="#/place/${esc(p.id)}">${esc(p.name)}</a> <span class="meta">${esc(pageRef(e.page))}${rest.length ? `, also ${esc(pagesText(rest))}` : ""}${!e.quote_html && e.illustration ? " (illustration)" : ""}</span></li>`).join("")}</ol>` : underConstruction("Entries are being added.")}
       </section>
       <div>
       <section class="panel">
@@ -593,7 +653,7 @@ function comparePage(params) {
   const cell = (p, gid) => {
     const e = p.entries.find((x) => x.guide === gid);
     return e
-      ? `<q>${esc(snippet(e, 140))}</q> <span class="meta">${esc(pageRef(e.page))}</span>`
+      ? `<q>${esc(snippet(e, 140))}</q> <span class="meta">${esc(pagesText(p.entries.filter((x) => x.guide === gid)))}</span>`
       : `<span class="meta">Not in this guide</span>`;
   };
   const today = (p) => `${statusBadge(p)} ${p.status_summary ? esc(p.status_summary) : ""}`;
@@ -807,6 +867,17 @@ document.addEventListener("click", (ev) => {
     // Jump to the content without changing the address (the router owns the #).
     ev.preventDefault();
     $("view").focus();
+    return;
+  }
+  const toggle = ev.target.closest("[data-passage]");
+  if (toggle) {
+    const box = toggle.closest(".entry");
+    const open = toggle.getAttribute("aria-expanded") !== "true";
+    box.querySelector(".excerpt").hidden = open;
+    box.querySelector(".full").hidden = !open;
+    toggle.setAttribute("aria-expanded", String(open));
+    toggle.textContent = open ? "Show less ▴" : toggle.dataset.more;
+    if (!open) box.scrollIntoView({ block: "nearest" });
     return;
   }
   const copy = ev.target.closest("[data-copy]");
