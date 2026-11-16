@@ -13,7 +13,9 @@
 #     - "[An article](https://example.org)"
 
 - id: wood-1889
-  title: "Over the Range to the Golden Gate: A Complete Tourist's Guide to Colorado, New Mexico, Utah, Nevada, California, Oregon, Puget Sound, and the Great North-West"
+  title:
+    "Over the Range to the Golden Gate: A Complete Tourist's Guide to Colorado, New Mexico, Utah,
+    Nevada, California, Oregon, Puget Sound, and the Great North-West"
   short_title: Over the Range to the Golden Gate
   author: Stanley Wood
   year: 1889
@@ -25,12 +27,13 @@
   scan_url: "https://archive.org/details/overrangetogolde02wood/" # Internet Archive link
   hathitrust_url: "" # optional
   summary: >
-    A route-by-route guide: each section follows a rail line and describes its
-    depots, towns and sights in turn.
+    A route-by-route guide: each section follows a rail line and describes its depots, towns and
+    sights.
   notes: Later editions appear to have been edited by S. K. Hooper alone.
 
 - id: ingersoll-1885
-  title: "The Crest of the Continent: A Record of a Summer's Ramble in the Rocky Mountains and Beyond"
+  title:
+    "The Crest of the Continent: A Record of a Summer's Ramble in the Rocky Mountains and Beyond"
   short_title: The Crest of the Continent
   author: Ernest Ingersoll
   year: 1885
@@ -42,6 +45,6 @@
   scan_url: "https://archive.org/details/crestofcontinent0000erne/"
   hathitrust_url: ""
   summary: >
-    An account of a summer's trip through the Rocky Mountains, published by
-    the same Chicago printer as Over the Range.
+    An account of a summer's trip through the Rocky Mountains, published by the same Chicago printer
+    as Over the Range.
   notes: Travelogue promoting the Denver & Rio Grande Railroad.
