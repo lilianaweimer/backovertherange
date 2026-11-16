@@ -404,7 +404,7 @@ MAX_IMAGE = 1600  # pixels on the long side; bigger photos and scans are shrunk 
 def resize_images(folder):
     """Shrink oversized JPEG and PNG images in the published copy (site/images/ is left alone)."""
     try:
-        from PIL import Image
+        from PIL import Image, ImageOps
     except ImportError:
         print("Note: Pillow isn't installed, so images were published at full size.")
         return
@@ -417,6 +417,7 @@ def resize_images(folder):
                 if max(im.size) <= MAX_IMAGE:
                     continue
                 before = path.stat().st_size
+                im = ImageOps.exif_transpose(im)  # phone photos store their rotation separately
                 im.thumbnail((MAX_IMAGE, MAX_IMAGE), Image.LANCZOS)
                 if path.suffix.lower() == ".png":
                     im.save(path, optimize=True)
