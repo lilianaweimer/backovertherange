@@ -78,6 +78,15 @@ state so ids stay unique: `sisson-ca`, `lucin-ut`, `denver-co`.
   `mine`, `route`, or `other`.
 - `photos` (optional): your own photos. Upload them to `site/images/`, then list
   them: `photos: [{file: tahoe-2018.jpg, caption: "South shore, July 2018"}]`.
+- `read_more` (optional): related books or articles, shown as "Read more" on the
+  place's page. One per line, in quotes, Markdown allowed:
+  ```
+  read_more:
+    - "Smith, Jane. *A Lake History*. University Press, 1990."
+    - "[Article title](https://example.org)"
+  ```
+  Guides take the same `read_more` list in `data/guides.yml`. Leave it out and
+  the section doesn't appear.
 - Below the second `---`, write whatever you know about the place today.
   Markdown works, including links to sources.
 
