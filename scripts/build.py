@@ -604,6 +604,7 @@ def main():
     out["version"] = hashlib.sha1(json.dumps(details, sort_keys=True).encode()).hexdigest()[:10]
     (DIST / "places").mkdir()
     for pid, d in details.items():
+        d["version"] = out["version"]  # the page checks this matches the map data it already has
         (DIST / "places" / f"{pid}.json").write_text(json.dumps(d, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     (DIST / "data.json").write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     resize_images(DIST / "images")

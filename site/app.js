@@ -429,6 +429,8 @@ function loadPlaceDetails(id) {
       return r.json();
     })
     .then((d) => {
+      // The site was updated since this page loaded: the entries may no longer line up.
+      if (d.version !== DATA.version) throw new Error("stale");
       const p = places[id];
       p.notes_html = d.notes_html;
       p.entries.forEach((e, i) => Object.assign(e, d.entries[i]));
@@ -892,13 +894,16 @@ function route() {
         const here = location.hash;
         loadPlaceDetails(id)
           .catch((err) => {
-            places[id].loaded = "failed";
+            places[id].loaded = err.message === "stale" ? "stale" : "failed";
             console.error(err);
           })
           .then(() => location.hash === here && route());
         return;
       }
-      html = placePage(id);
+      html =
+        places[id]?.loaded === "stale"
+          ? `<p class="panel">The site was updated while this page was open. <a href="#" onclick="location.reload(); return false">Reload</a> to see the latest.</p>`
+          : placePage(id);
       title = places[id]?.name;
       break;
     case "places":
