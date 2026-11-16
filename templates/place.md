@@ -2,8 +2,9 @@
 # Copy this file to data/places/<place-id>.md
 # The file name (without .md) IS the place id, e.g. data/places/sisson-ca.md -> sisson-ca
 name:            # today's name, e.g. Mount Shasta
+parent:          # optional: the id of the place this one is inside, e.g. san-francisco-ca
 region:          # state / province, e.g. California
-lat:             # e.g. 41.3099   (from USGS GNIS where possible; see README)
+lat:             # e.g. 41.3099   (from USGS GNIS where possible; see README). A sub-place can leave lat/lon empty to use its parent's point
 lon:             # e.g. -122.3106 (west is negative)
 coords_source:   # e.g. "USGS GNIS 1659136", or "OpenStreetMap" / "1885 map" if not in GNIS
 precision: exact # exact | approximate | unknown
