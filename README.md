@@ -61,6 +61,13 @@ state so ids stay unique: `sisson-ca`, `lucin-ut`, `denver-co`.
   result, and copy its latitude and longitude in decimal degrees. If the place isn't in
   GNIS, right-click the spot in [OpenStreetMap](https://www.openstreetmap.org) instead and
   set `precision: approximate` if you're unsure. West of Greenwich is negative.
+- `parent` (optional): for a place inside another, like Golden Gate Park in
+  San Francisco, the id of the place it's in: `parent: san-francisco-ca`. It gets
+  its own marker and page, is listed under its parent on the Places page and the
+  parent's page, and can have its own entries (the passage about just that spot;
+  keep the general intro in the parent's entry). Sub-places can nest. If you
+  can't pin one down, leave `lat`/`lon` empty and it uses the parent's point,
+  marked approximate.
 - `visited` (optional): when you went there yourself, e.g. `2018-07`. Shown as a "Visited" mark on the place.
 - `coords_source`: where the coordinates came from, e.g. `USGS GNIS 1659136`
   (the GNIS feature ID) or `OpenStreetMap`. Shown on the place page.
