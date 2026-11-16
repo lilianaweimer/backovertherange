@@ -959,6 +959,13 @@ img.new {
   }
 }
 
+/* Cite this page */
+.cite-text {
+  font-family: "EB Garamond", Georgia, serif;
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
+}
+
 /* Sub-places */
 .sub-places {
   list-style: none;

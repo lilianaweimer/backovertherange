@@ -1,0 +1,18 @@
+# GitHub reads this file and shows a "Cite this repository" button.
+cff-version: 1.2.0
+message: "If you use this data, please cite it as below."
+type: dataset
+title: "Back Over the Range"
+abstract:
+  "A map of the places described in public-domain travel guides, with each guide's own words and
+  notes on the place today."
+authors:
+  - name: "Back Over the Range"
+url: "https://backovertherange.com/"
+repository-code: "https://github.com/lilianaweimer/backovertherange"
+license: CC-BY-4.0
+keywords:
+  - historical gazetteer
+  - travel guides
+  - railroad history
+  - digital humanities

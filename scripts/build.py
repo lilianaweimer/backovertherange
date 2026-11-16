@@ -14,12 +14,16 @@ Reads:
 Writes:
     dist/                 a copy of site/ plus...
     dist/data.json        every guide, place and entry, ready for the map
+    dist/downloads/       the same data for others to reuse and cite: one JSON
+                          file and three CSV files (guides, places, entries)
 
 Every problem is reported in plain words with the file it is in. If any
 problem is found, the script stops with an error so nothing broken goes live.
 """
 
+import csv
 import datetime
+import io
 import hashlib
 import html
 import json
@@ -367,6 +371,7 @@ def load_entries(guides, places):
             "summary": plain(fields.get("summary")),
             "excerpt_html": excerpt_html,  # empty: the whole passage is short enough to show
             "quote_html": quote_html,
+            "quote_md": body,  # for the downloads only; dropped from data.json
             "illustration": illustration,
             "image": check_image(path, fields.get("image")) if fields.get("image") else "",
             "facts": [plain(f) for f in facts if plain(f)],
@@ -430,7 +435,8 @@ def resize_images(folder):
         print(f"Shrank {len(shrunk)} image(s) wider or taller than {MAX_IMAGE}px: " + ", ".join(shrunk))
 
 
-SITE_DEFAULTS = {"goatcounter": "", "tagline": "", "marquee": [], "contact_email": ""}
+SITE_DEFAULTS = {"goatcounter": "", "tagline": "", "marquee": [], "contact_email": "",
+                 "url": "", "license": "", "license_url": ""}
 
 
 def load_site_settings():
@@ -457,6 +463,9 @@ def load_site_settings():
         "tagline": plain(fields.get("tagline")),
         "marquee": [plain(m) for m in marquee if plain(m)],
         "contact_email": plain(fields.get("contact_email")),
+        "url": plain(fields.get("url")).rstrip("/") + "/" if plain(fields.get("url")) else "",
+        "license": plain(fields.get("license")),
+        "license_url": plain(fields.get("license_url")),
     }
 
 
@@ -545,7 +554,8 @@ def guide_list_markdown(guides):
 
 def load_pages(site, guides):
     """The About and Learn more pages.
-    {{contact_email}} becomes the address in data/site.yml; {{guides}} becomes a list of every guide."""
+    {{contact_email}}, {{license}} and {{site_url}} come from data/site.yml; {{guides}} becomes a list
+    of every guide; {{updated}} is the date of the latest change."""
     pages = {}
     for name in ("about", "learn-more"):
         path = CONTENT / f"{name}.md"
@@ -555,8 +565,64 @@ def load_pages(site, guides):
         text = path.read_text(encoding="utf-8").strip()
         text = text.replace("{{contact_email}}", site["contact_email"])
         text = text.replace("{{guides}}", guide_list_markdown(guides))
+        license_md = f"[{site['license']}]({site['license_url']})" if site["license_url"] else site["license"]
+        text = text.replace("{{license}}", license_md or "a license still to be chosen")
+        text = text.replace("{{site_url}}", site["url"]).replace("{{updated}}", last_updated())
         pages[name] = page_html(text)
     return pages
+
+
+DOWNLOAD_NAME = "back-over-the-range"
+
+
+def csv_text(header, rows):
+    buf = io.StringIO()
+    w = csv.writer(buf, lineterminator="\n")
+    w.writerow(header)
+    w.writerows(rows)
+    return buf.getvalue()
+
+
+def write_downloads(site, guides, places, version):
+    """dist/downloads/: the data in plain formats, with no site-only fields
+    (colors, HTML, photos), so it can be reused and cited."""
+    folder = DIST / "downloads"
+    folder.mkdir()
+    g_fields = ["id", "title", "short_title", "author", "year", "first_published",
+                "publisher", "kind", "scan_url", "hathitrust_url", "covers"]
+    p_fields = ["id", "name", "parent", "region", "lat", "lon", "precision", "coords_source",
+                "category", "status", "status_summary", "former_names", "tags", "visited"]
+    e_fields = ["place", "guide", "name_in_guide", "page", "section", "summary", "quote",
+                "illustration", "facts"]
+    out_guides = [{k: g[k] for k in g_fields} for g in guides.values()]
+    out_places, out_entries = [], []
+    for p in places.values():
+        out_places.append({k: p[k] for k in p_fields})
+        for e in p["entries"]:
+            out_entries.append({"place": p["id"], "guide": e["guide"], "name_in_guide": e["name_in_guide"],
+                                "page": e["page"], "section": e["section"], "summary": e["summary"],
+                                "quote": e["quote_md"], "illustration": e["illustration"],
+                                "facts": e["facts"]})
+    about = {
+        "title": "Back Over the Range",
+        "url": site["url"],
+        "version": version,
+        "license": site["license"],
+        "license_url": site["license_url"],
+        "cite_as": f"Back Over the Range. Dataset, version {version}. {site['url']}".strip(),
+        "notes": "Quotes are transcribed from public-domain guides; spelling follows the original. "
+                 "Markdown is used for italics in quotes. Coordinates are WGS 84 decimal degrees.",
+    }
+    full = {"about": about, "guides": out_guides, "places": out_places, "entries": out_entries}
+    (folder / f"{DOWNLOAD_NAME}.json").write_text(json.dumps(full, ensure_ascii=False, indent=1), encoding="utf-8")
+
+    def cell(v):
+        return "; ".join(v) if isinstance(v, list) else v
+    for name, fields, rows in (("guides", g_fields, out_guides), ("places", p_fields, out_places),
+                               ("entries", e_fields, out_entries)):
+        text = csv_text(fields, ([cell(r[k]) for k in fields] for r in rows))
+        # utf-8-sig so Excel shows accented letters correctly
+        (folder / f"{DOWNLOAD_NAME}-{name}.csv").write_text(text, encoding="utf-8-sig")
 
 
 def main():
@@ -589,9 +655,14 @@ def main():
     if DIST.exists():
         shutil.rmtree(DIST)
     shutil.copytree(SITE, DIST)
+    version = last_updated()
+    write_downloads(site, guides, places, version)
+    for place in places.values():
+        for e in place["entries"]:
+            e.pop("quote_md", None)
     out = {
         "built": datetime.date.today().isoformat(),
-        "updated": last_updated(),
+        "updated": version,
         "site": site,
         "guides": list(guides.values()),
         "places": list(places.values()),

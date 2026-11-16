@@ -1,7 +1,8 @@
 <!--
 This is the About page. Edit freely: it's Markdown.
 Each "## Heading" becomes a section, and gets a link in the page's side menu.
-{{contact_email}} is filled in from data/site.yml.
+{{contact_email}}, {{license}} and {{site_url}} are filled in from data/site.yml;
+{{updated}} is the date of the latest change.
 -->
 
 # About
@@ -39,6 +40,24 @@ anymore. My own notes on the present may also be out of date.
 I make no claim about whether any place can be visited, and take no responsibility for anyone who
 goes. The "Get there" links open third-party map apps, which may route you somewhere you should not
 go. Please check current conditions and permissions yourself, and respect property and closures.
+
+## Using and citing this data
+
+The data and the site's own writing are shared under {{license}}: you can reuse them for any purpose
+if you credit Back Over the Range and link to the license. The quotes come from public-domain
+guides. Photos and decorative images are not covered.
+
+Download everything as [JSON](downloads/back-over-the-range.json), or as CSV files of the
+[guides](downloads/back-over-the-range-guides.csv),
+[places](downloads/back-over-the-range-places.csv) and
+[entries](downloads/back-over-the-range-entries.csv). The files are rebuilt every time the site is
+updated, and are dated by that update.
+
+To cite the whole project:
+
+> Back Over the Range. Dataset, version {{updated}}. {{site_url}}
+
+To cite one place, use the "Cite this page" box on that place's page.
 
 ## About me
 

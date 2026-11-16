@@ -559,8 +559,27 @@ function placePage(id) {
           </p>
           <p class="disclaimer">Locations come from old guidebooks and may be approximate. Some places are on private land, closed, unsafe or no longer there. This site does not know the current state of any place and takes no responsibility for visits. <a href="#/about/visiting-these-places">More</a>.</p>
         </section>
+        ${citeBox(`“${p.name}.”`, "#/place/" + p.id)}
       </div>
     </div>`;
+}
+
+// A ready-made citation for a page, with the date it was read.
+function citeBox(title, hash) {
+  const base = (DATA.site && DATA.site.url) || location.origin + location.pathname;
+  const today = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const text = `${title} Back Over the Range. Accessed ${today}. ${base}${hash}`;
+  const lic = DATA.site && DATA.site.license;
+  return `<section class="panel cite">
+      <h2>Cite this page</h2>
+      <p class="cite-text">${esc(text)}</p>
+      <p><button type="button" class="btn" data-copy="${esc(text)}">Copy citation</button></p>
+      ${lic ? `<p class="meta">Free to reuse under ${esc(lic)} with credit. <a href="#/about/using-and-citing-this-data">Downloads and details</a>.</p>` : ""}
+    </section>`;
 }
 
 const FIRST_ROWS = 150;
@@ -969,13 +988,14 @@ document.addEventListener("click", (ev) => {
   const copy = ev.target.closest("[data-copy]");
   if (copy) {
     const text = copy.dataset.copy;
+    const label = copy.dataset.label || (copy.dataset.label = copy.textContent);
     const done = () => {
       copy.textContent = "Copied!";
-      setTimeout(() => (copy.textContent = "Copy coordinates"), 1600);
+      setTimeout(() => (copy.textContent = label), 1600);
     };
     if (navigator.clipboard)
-      navigator.clipboard.writeText(text).then(done, () => prompt("Copy these coordinates:", text));
-    else prompt("Copy these coordinates:", text);
+      navigator.clipboard.writeText(text).then(done, () => prompt("Copy this:", text));
+    else prompt("Copy this:", text);
   }
 });
 document.addEventListener("input", (ev) => {
@@ -1025,6 +1045,13 @@ function showFrame(data) {
   }
   if (data.updated)
     $("updated").innerHTML = " <span class=sep>·</span> Last updated " + fmtDate(data.updated);
+  if (s.license) {
+    const lic = s.license_url
+      ? `<a href="${esc(s.license_url)}" rel="license">${esc(s.license)}</a>`
+      : esc(s.license);
+    $("license").innerHTML =
+      ` <span class=sep>·</span> Data ${lic} <span class=sep>·</span> <a href="#/about/using-and-citing-this-data">Cite or download</a>`;
+  }
 
   const code = s.goatcounter;
   if (!code) return;

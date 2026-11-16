@@ -34,10 +34,12 @@ Denver's page.
 
 All the text on the site lives in plain files, so you never need to touch the HTML:
 
-- **Tagline, marquee, contact email:** `data/site.yml`.
+- **Tagline, marquee, contact email, site address, license:** `data/site.yml`.
 - **About and Learn more:** `content/about.md` and `content/learn-more.md`. `{{guides}}` on Learn
-  more becomes a list of every guide in `data/guides.yml`. Markdown; each `## Heading` becomes a
-  section with its own link (`#/about/contact` jumps to the Contact section).
+  more becomes a list of every guide in `data/guides.yml`. `{{license}}`, `{{site_url}}` and
+  `{{updated}}` (date of the latest change) are filled in too, for the "Using and citing this data"
+  section on About. Markdown; each `## Heading` becomes a section with its own link
+  (`#/about/contact` jumps to the Contact section).
 - **A guide's page:** `summary`, `kind`, `covers` and `color` in `data/guides.yml`. `color` is that
   guide's map marker color. Places in more than one guide are grey.
 - **An illustration collection's intro:** `intro` in `data/illustrations/<collection>.yml`.
@@ -224,12 +226,20 @@ Leave it empty and the counter stays hidden.
   the data. `dist/data.json` holds what the map and lists need (names, points, page numbers and a
   short snippet of each passage); the full passages and today's notes go in one small file per
   place, `dist/places/<place-id>.json`, which a place's page loads when it opens. That keeps the map
-  quick with thousands of entries. The build also shrinks published images over 1600px.
+  quick with thousands of entries. The build also shrinks published images over 1600px. It also
+  writes `dist/downloads/`: the same data as one JSON file and three CSV files (guides, places,
+  entries), without site-only fields like colors and photos, for others to reuse and cite.
 - `.github/workflows/site.yml` runs the build and publishes `dist/` to GitHub Pages.
 
 To add a status or category, add it to the lists at the top of `scripts/build.py`, and give a status
 a label in `site/app.js` (`STATUS_LABELS`). Kinds of book need no setup: write any `kind:` in
 `data/guides.yml` and the site groups by it.
+
+## License and citing
+
+The data and writing are under CC BY 4.0 (`LICENSE-DATA.md`); the code is under MIT (`LICENSE`).
+`CITATION.cff` gives GitHub's "Cite this repository" button. Each place page has a "Cite this page"
+box.
 
 ## Finding more guides
 
