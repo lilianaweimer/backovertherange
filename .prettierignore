@@ -7,10 +7,6 @@ site/images/
 site/*.png
 site/*.ico
 
-# Hand-typed data: quotes and notes are transcribed from the guides, so never reflow them
-data/places/
-data/entries/
-
 # Editor settings
 .idea/
 

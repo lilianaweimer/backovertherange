@@ -53,8 +53,9 @@ npm run format        # fix everything
 npm run format:check  # only report
 ```
 
-Place and entry files under `data/`, and the starter files in `templates/`, are deliberately left
-alone so transcribed quotes are never reflowed.
+Long paragraphs, including transcribed quotes, are rewrapped at 100 columns; that only changes where
+the lines break in the file, not how the text reads on the site. The starter files in `templates/`
+are left alone to keep their aligned comments.
 
 ## Adding data
 
