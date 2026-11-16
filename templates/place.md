@@ -19,5 +19,4 @@ read_more: []    # optional related books or articles, one per line, e.g.
 tags: []         # themes, e.g. [water, rail, sprawl, labor]
 photos: []       # your own photos, in site/images/: [{file: tahoe-2018.jpg, caption: "South shore, July 2018"}]
 ---
-Your notes on what this place is like today. Markdown works: *italics*,
-**bold**, and [links to sources](https://example.org).
+
