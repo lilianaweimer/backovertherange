@@ -76,12 +76,12 @@ def read_markdown_file(path):
 
 
 def to_html(body):
-    return markdown.markdown(body) if body else ""
+    return markdown.markdown(body, extensions=["tables"]) if body else ""
 
 
 def page_html(body):
     """Markdown for whole pages: ## headings get ids so the page can link to them."""
-    return markdown.markdown(body, extensions=["toc"]) if body else ""
+    return markdown.markdown(body, extensions=["toc", "tables"]) if body else ""
 
 
 def read_more(path, value, label):
@@ -115,6 +115,20 @@ def check_image(path, file_name):
         problem(path, f"image '{name}' isn't in site/images/. Upload it there, or check the spelling.")
         return ""
     return "images/" + name
+
+
+def visited_value(path, value):
+    """'yes', a year, a year and month, or a full date. Returns '' when not visited."""
+    if value is None or value is False or plain(value).lower() in ("", "no"):
+        return ""
+    if value is True or plain(value).lower() == "yes":
+        return "yes"
+    text = plain(value)
+    if re.fullmatch(r"\d{4}(-\d{2}(-\d{2})?)?", text):
+        return text
+    problem(path, f"'visited: {text}' isn't something the site understands. Use yes, a year (2018), "
+                  "a year and month (2018-07), or a full date (2018-07-10).")
+    return ""
 
 
 def plain(value):
@@ -242,7 +256,7 @@ def load_places():
             "status": status,
             "status_summary": plain(fields.get("status_summary")),
             "former_names": as_list(fields.get("former_names")),
-            "visited": plain(fields.get("visited")),
+            "visited": visited_value(path, fields.get("visited")),
             "added": date_added(path),
             "coords_source": plain(fields.get("coords_source")),
             "photos": load_photos(path, fields.get("photos")),
@@ -296,6 +310,14 @@ def problems_for(path):
     return any(x.startswith(f"{path.relative_to(ROOT)}:") for x in problems)
 
 
+LONG_PASSAGE = 700  # characters; longer passages without an excerpt fold after the first paragraph
+
+
+def first_page(page):
+    m = re.match(r"\s*(\d+)", str(page))
+    return int(m.group(1)) if m else 0
+
+
 def load_entries(guides, places):
     count = 0
     for path in sorted((DATA / "entries").glob("**/*.md")):
@@ -314,15 +336,38 @@ def load_entries(guides, places):
             continue
         if not plain(fields.get("page")):
             problem(path, "'page' is missing.")
-        if not body:
-            problem(path, "the quote is missing. Paste the guide's words below the second '---'.")
+        illustration = plain(fields.get("illustration"))
+        facts = fields.get("facts") or []
+        if isinstance(facts, str):
+            facts = [facts]
+        if not isinstance(facts, list) or any(isinstance(f, dict) for f in facts):
+            problem(path, "'facts' should be a list, one line per line of the box, each starting with '  - '. "
+                          "Wrap a line in quotes if it has a ': ' in it.")
+            facts = []
+        if not body and not illustration and not facts:
+            problem(path, "the quote is missing. Paste the guide's words below the second '---' "
+                          "(or, for a place the guide only shows in a picture, fill in 'illustration:').")
+        excerpt = plain(fields.get("excerpt"))
+        quote_html = to_html(body)
+        if excerpt:
+            excerpt_html = to_html(excerpt)
+        else:
+            # No excerpt written: a long passage shows its first paragraph and folds away
+            # the rest; a short one shows in full.
+            paras = [b for b in re.split(r"\n\s*\n", body.strip()) if b.strip()] if body else []
+            long = len(body or "") > LONG_PASSAGE
+            excerpt_html = to_html(paras[0]) if long and len(paras) > 1 else ""
         places[pid]["entries"].append({
             "guide": gid,
             "name_in_guide": plain(fields.get("name_in_guide")) or places[pid]["name"],
             "page": plain(fields.get("page")),
             "section": plain(fields.get("section")),
             "summary": plain(fields.get("summary")),
-            "quote_html": to_html(body),
+            "excerpt_html": excerpt_html,  # empty: the whole passage is short enough to show
+            "quote_html": quote_html,
+            "illustration": illustration,
+            "image": check_image(path, fields.get("image")) if fields.get("image") else "",
+            "facts": [plain(f) for f in facts if plain(f)],
         })
         count += 1
     return count
@@ -467,7 +512,7 @@ def main():
     pages = load_pages(site, guides)
 
     for place in places.values():
-        place["entries"].sort(key=lambda e: (guides[e["guide"]]["year"], e["guide"]))
+        place["entries"].sort(key=lambda e: (guides[e["guide"]]["year"], e["guide"], first_page(e["page"])))
 
     if problems:
         print(f"Found {len(problems)} problem(s):\n")

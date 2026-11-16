@@ -77,30 +77,35 @@
                 <option value="">All books</option>
               </select></label
             >
-            <label class="field"
-              >Today
-              <select id="f-status">
-                <option value="">Any status</option>
-              </select></label
-            >
-            <label class="field"
-              >Theme
-              <select id="f-tag">
-                <option value="">Any theme</option>
-              </select></label
-            >
-            <label class="field"
-              >Published
-              <select id="f-era">
-                <option value="">Any year</option>
-              </select></label
-            >
           </div>
-          <fieldset class="checks">
-            <legend>Show on the map</legend>
-            <label><input type="checkbox" id="f-illus" /> Only places with illustrations</label>
-            <label><input type="checkbox" id="f-visited" /> Only places I’ve visited</label>
-          </fieldset>
+          <details class="more-filters" id="more-filters">
+            <summary>More filters <span id="more-count" class="more-count"></span></summary>
+            <div class="field-grid">
+              <label class="field"
+                >Today
+                <select id="f-status">
+                  <option value="">Any status</option>
+                </select></label
+              >
+              <label class="field"
+                >Theme
+                <select id="f-tag">
+                  <option value="">Any theme</option>
+                </select></label
+              >
+              <label class="field"
+                >Published
+                <select id="f-era">
+                  <option value="">Any year</option>
+                </select></label
+              >
+            </div>
+            <fieldset class="checks">
+              <legend>Show on the map</legend>
+              <label><input type="checkbox" id="f-illus" /> Only places with illustrations</label>
+              <label><input type="checkbox" id="f-visited" /> Only places I’ve visited</label>
+            </fieldset>
+          </details>
           <p class="count">
             <span id="count" aria-live="polite"></span> <span class="sep">·</span>
             <button type="button" class="linkish" id="clear">Clear filters</button>
