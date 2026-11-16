@@ -1128,3 +1128,23 @@ details.guide-section {
     padding: 10px 16px 12px;
   }
 }
+
+/* "More filters" folds away the less-used filters. */
+details.more-filters {
+  border-top: 0;
+  padding: 0;
+}
+.more-filters summary {
+  font: 600 14px var(--heading);
+  color: var(--ink-soft);
+}
+.more-filters[open] summary {
+  margin-bottom: 10px;
+}
+.more-filters .checks {
+  margin-top: 12px;
+}
+.more-count {
+  font-weight: 400;
+  color: #2e6b26;
+}
