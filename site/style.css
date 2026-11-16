@@ -1063,3 +1063,11 @@ details.guide-section {
   text-align: right;
   padding-right: 0;
 }
+
+/* Places table: keep names and page references readable when a region list is long. */
+#places-table td:first-child {
+  min-width: 11em;
+}
+#places-table td:nth-child(3) {
+  white-space: nowrap;
+}
