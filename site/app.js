@@ -66,6 +66,7 @@ function guideColor(g) {
   return g.color || FALLBACK_COLORS[DATA.guides.indexOf(g) % FALLBACK_COLORS.length];
 }
 // Sub-places: a place can name another as its 'parent' (Golden Gate Park in San Francisco).
+let onMap = new Set(); // markers currently on the map
 let kidsByParent; // built once: looking through every place for each place gets slow with thousands
 function childrenOf(id) {
   if (!kidsByParent) {
@@ -322,8 +323,18 @@ function matches(p) {
 function applyFilters() {
   const shown = DATA.places.filter(matches).sort((a, b) => a.name.localeCompare(b.name));
   if (cluster) {
-    cluster.clearLayers();
-    for (const p of shown) cluster.addLayer(markers[p.id]);
+    // Only touch the markers that change, and in bulk: redrawing thousands one by one is slow.
+    const want = new Set(shown.map((p) => markers[p.id]));
+    const drop = [...onMap].filter((m) => !want.has(m));
+    const add = [...want].filter((m) => !onMap.has(m));
+    if (cluster.removeLayers) {
+      cluster.removeLayers(drop);
+      cluster.addLayers(add);
+    } else {
+      drop.forEach((m) => cluster.removeLayer(m));
+      add.forEach((m) => cluster.addLayer(m));
+    }
+    onMap = want;
   }
   const nGuides = new Set(shown.flatMap(placeGuides)).size;
   $("count").innerHTML =
@@ -538,6 +549,16 @@ function placePage(id) {
     </div>`;
 }
 
+const FIRST_ROWS = 150;
+let laterRows = [];
+function addLaterRows() {
+  const body = document.querySelector("#places-table tbody");
+  if (!body || !laterRows.length) return;
+  const q = ($("places-search")?.value || "").trim().toLowerCase();
+  body.insertAdjacentHTML("beforeend", laterRows.splice(0, 400).join(""));
+  if (q) for (const tr of body.rows) tr.hidden = !tr.dataset.names.includes(q);
+  if (laterRows.length) setTimeout(addLaterRows, 0);
+}
 function placesPage() {
   // A to Z, with each place's sub-places right under it, indented.
   const sorted = [];
@@ -549,23 +570,25 @@ function placesPage() {
     .filter((q) => !q.parent || !places[q.parent])
     .sort((a, b) => a.name.localeCompare(b.name)))
     add(q, 0);
+  const rows = sorted.map(
+    (
+      p,
+    ) => `<tr data-names="${esc([p.name, p.region, ...p.former_names, ...p.entries.map((e) => e.name_in_guide), ...ancestors(p).map((x) => x.name)].join(" ").toLowerCase())}">
+        <td${p.depth ? ` class="sub" style="padding-left:${0.6 + 1.2 * p.depth}em"` : ""}>${p.depth ? '<span class="sub-mark" aria-hidden="true">↳ </span>' : ""}${dot(placeColor(p))}<a href="#/place/${esc(p.id)}">${esc(p.name)}</a>${newBadge(p)}${p.visited ? ' <span class="visited small">Visited</span>' : ""}</td>
+        <td>${esc(p.region)}</td>
+        <td>${p.entries.length ? citeAll(p, "<br>") : '<span class="meta">None yet</span>'}</td>
+        <td>${statusBadge(p)}</td></tr>`,
+  );
+  // Draw the first rows now and the rest just after, so a long list opens quickly.
+  laterRows = rows.slice(FIRST_ROWS);
+  if (laterRows.length) setTimeout(addLaterRows, 0);
   return `
     <h1>Places</h1>
     <p class="lede">Every place on the map, A to Z, with places inside a town listed under it. ${plural(sorted.length, "place")} so far.</p>
     <label class="field narrow">Search <input type="search" id="places-search" placeholder="Name, then or now"></label>
     <table class="table" id="places-table">
       <thead><tr><th>Place</th><th>Region</th><th>In the guides</th><th>Today</th></tr></thead>
-      <tbody>${sorted
-        .map(
-          (
-            p,
-          ) => `<tr data-names="${esc([p.name, p.region, ...p.former_names, ...p.entries.map((e) => e.name_in_guide), ...ancestors(p).map((x) => x.name)].join(" ").toLowerCase())}">
-        <td${p.depth ? ` class="sub" style="padding-left:${0.6 + 1.2 * p.depth}em"` : ""}>${p.depth ? '<span class="sub-mark" aria-hidden="true">↳ </span>' : ""}${dot(placeColor(p))}<a href="#/place/${esc(p.id)}">${esc(p.name)}</a>${newBadge(p)}${p.visited ? ' <span class="visited small">Visited</span>' : ""}</td>
-        <td>${esc(p.region)}</td>
-        <td>${p.entries.length ? citeAll(p, "<br>") : '<span class="meta">None yet</span>'}</td>
-        <td>${statusBadge(p)}</td></tr>`,
-        )
-        .join("")}</tbody>
+      <tbody>${rows.slice(0, FIRST_ROWS).join("")}</tbody>
     </table>
     ${sorted.length ? "" : underConstruction("Places are being added.")}`;
 }
