@@ -117,6 +117,20 @@ def check_image(path, file_name):
     return "images/" + name
 
 
+def visited_value(path, value):
+    """'yes', a year, a year and month, or a full date. Returns '' when not visited."""
+    if value is None or value is False or plain(value).lower() in ("", "no"):
+        return ""
+    if value is True or plain(value).lower() == "yes":
+        return "yes"
+    text = plain(value)
+    if re.fullmatch(r"\d{4}(-\d{2}(-\d{2})?)?", text):
+        return text
+    problem(path, f"'visited: {text}' isn't something the site understands. Use yes, a year (2018), "
+                  "a year and month (2018-07), or a full date (2018-07-10).")
+    return ""
+
+
 def plain(value):
     """YAML turns dates and numbers into objects; the site wants text."""
     if value is None:
@@ -242,7 +256,7 @@ def load_places():
             "status": status,
             "status_summary": plain(fields.get("status_summary")),
             "former_names": as_list(fields.get("former_names")),
-            "visited": plain(fields.get("visited")),
+            "visited": visited_value(path, fields.get("visited")),
             "added": date_added(path),
             "coords_source": plain(fields.get("coords_source")),
             "photos": load_photos(path, fields.get("photos")),
