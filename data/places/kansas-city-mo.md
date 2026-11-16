@@ -6,7 +6,7 @@ parent: # optional: the id of the place this one is inside, e.g. san-francisco-c
 region: [Missouri, Kansas]
 lat: 39.1238658
 lon: -94.5540869
-coords_source: # e.g. "USGS GNIS 1659136", or "OpenStreetMap" / "1885 map" if not in GNIS
+coords_source: USGS GNIS 748198 # e.g. "USGS GNIS 1659136", or "OpenStreetMap" / "1885 map" if not in GNIS
 precision: exact # exact | approximate | unknown
 category: town # town | depot | natural-feature | building | resort | mine | route | other
 status: thriving # thriving | transformed | renamed | absorbed | declined | ghost-town | gone | unknown

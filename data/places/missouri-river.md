@@ -6,7 +6,7 @@ parent: # optional: the id of the place this one is inside, e.g. san-francisco-c
 region: [Illinois, Missouri, Kansas, Iowa, Nebraska, South Dakota, North Dakota, Montana]
 lat: 38.8136597
 lon: -90.1198297
-coords_source: USGS GNIS ID 756398
+coords_source: USGS GNIS 756398
 precision: exact
 category: natural-feature
 status: unknown

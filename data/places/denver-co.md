@@ -4,7 +4,7 @@
 name: Denver # today's name, e.g. Mount Shasta
 parent: # optional: the id of the place this one is inside, e.g. san-francisco-ca
 region: [Colorado] # state / province, e.g. California. More than one: [Montana, North Dakota]
-lat: 39.7391536  # e.g. 41.3099   (from USGS GNIS where possible; see README). A sub-place can leave lat/lon empty to use its parent's point
+lat: 39.7391536 # e.g. 41.3099   (from USGS GNIS where possible; see README). A sub-place can leave lat/lon empty to use its parent's point
 lon: -104.9847034 # e.g. -122.3106 (west is negative)
 coords_source: USGS GNIS 201738 # e.g. "USGS GNIS 1659136", or "OpenStreetMap" / "1885 map" if not in GNIS
 precision: exact # exact | approximate | unknown

@@ -6,7 +6,7 @@ parent: # optional: the id of the place this one is inside, e.g. san-francisco-c
 region: [Illinois] # state / province, e.g. California. More than one: [Montana, North Dakota]
 lat: 41.850033 # e.g. 41.3099   (from USGS GNIS where possible; see README). A sub-place can leave lat/lon empty to use its parent's point
 lon: -87.6500523 # e.g. -122.3106 (west is negative)
-coords_source: # e.g. "USGS GNIS 1659136", or "OpenStreetMap" / "1885 map" if not in GNIS
+coords_source: USGS GNIS 423587 # e.g. "USGS GNIS 1659136", or "OpenStreetMap" / "1885 map" if not in GNIS
 precision: exact # exact | approximate | unknown
 category: town # town | depot | natural-feature | building | resort | mine | route | other
 status: thriving # thriving | transformed | renamed | absorbed | declined | ghost-town | gone | unknown
