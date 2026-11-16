@@ -46,6 +46,20 @@ All the text on the site lives in plain files, so you never need to touch the HT
 - **An illustration collection's intro:** `intro` in `data/illustrations/<collection>.yml`.
 - **Colors and fonts:** the variables at the top of `site/style.css`.
 
+## Formatting
+
+[Prettier](https://prettier.io) keeps the HTML, CSS, JavaScript, YAML and
+Markdown consistently formatted, and the GitHub check fails if a file isn't.
+It needs Node; run `npm install` once, then:
+
+```
+npm run format        # fix everything
+npm run format:check  # only report
+```
+
+Place and entry files under `data/`, and the starter files in `templates/`,
+are deliberately left alone so transcribed quotes are never reflowed.
+
 ## Adding data
 
 **A new guide:** add a block to `data/guides.yml`. Give it a short id like
@@ -154,7 +168,7 @@ check without building.
    - Under **Custom records**, add:
 
      | Type  | Host | Data                    |
-     |-------|------|-------------------------|
+     | ----- | ---- | ----------------------- |
      | A     | @    | 185.199.108.153         |
      | A     | @    | 185.199.109.153         |
      | A     | @    | 185.199.110.153         |
