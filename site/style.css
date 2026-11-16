@@ -185,8 +185,18 @@ img {
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  /* Standing still: show the text once, wrapped, so every message can be read. */
+  .marquee {
+    white-space: normal;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
   .marquee-track {
+    display: block;
     animation: none;
+  }
+  .marquee-track [aria-hidden="true"] {
+    display: none;
   }
 }
 
