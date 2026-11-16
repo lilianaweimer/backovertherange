@@ -50,6 +50,22 @@ h3 {
   font-family: var(--heading);
   line-height: 1.2;
 }
+/* Even out short intros and headings, and avoid a lone word on the last line of a paragraph. */
+h1,
+h2,
+h3,
+figcaption,
+.lede,
+.tagline {
+  text-wrap: balance;
+}
+p,
+li,
+dd,
+td,
+blockquote {
+  text-wrap: pretty;
+}
 h1 {
   font-size: 30px;
   font-weight: 700;
