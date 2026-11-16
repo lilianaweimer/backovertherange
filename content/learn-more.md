@@ -7,9 +7,9 @@ The Learn more page (bibliography). Markdown: "## Heading" starts a group,
 # Learn more
 
 Further reading on the guides, the railroads that published them, their
-illustrations and the places they describe. Books and articles consulted while
-this project began, limited to published and archival sources, plus a short
-list of standard works.
+illustrations and the places they describe. Some are books and articles used while
+working on the project, limited to published and archival sources, plus a short
+list of standard works to go along with those.
 
 ## The guides
 
