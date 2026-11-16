@@ -79,8 +79,9 @@ place's id. Use lowercase and dashes, and add the state so ids stay unique: `sis
   its parent on the Places page and the parent's page, and can have its own entries (the passage
   about just that spot; keep the general intro in the parent's entry). Sub-places can nest. If you
   can't pin one down, leave `lat`/`lon` empty and it uses the parent's point, marked approximate.
-- `visited` (optional): when you went there yourself, e.g. `2018-07`. Shown as a "Visited" mark on
-  the place.
+- `visited` (optional): if you've been there yourself. Write `yes` when you don't know when, or as
+  much of the date as you know: `2018`, `2018-07` or `2018-07-10`. Shown as "✔ Visited", "✔ Visited
+  2018", "✔ Visited July 2018" or "✔ Visited July 10, 2018". Leave it blank if you haven't been.
 - `coords_source`: where the coordinates came from, e.g. `USGS GNIS 1659136` (the GNIS feature ID)
   or `OpenStreetMap`. Shown on the place page.
 - `precision`: `exact`, `approximate` (shown with a dashed outline), or `unknown`.

@@ -40,13 +40,16 @@ const fmtDate = (iso) => {
   const d = new Date(iso + "T12:00:00");
   return isNaN(d) ? iso : d.toLocaleDateString("en-US");
 };
-const fmtMonth = (v) => {
-  const m = /^(\d{4})-(\d{2})/.exec(v || "");
-  if (!m) return v || "";
-  return new Date(+m[1], +m[2] - 1, 15).toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
+// "yes" -> "", 2018 -> "2018", 2018-07 -> "July 2018", 2018-07-10 -> "July 10, 2018".
+const fmtVisited = (v) => {
+  const m = /^(\d{4})(?:-(\d{2}))?(?:-(\d{2}))?$/.exec(String(v || ""));
+  if (!m) return "";
+  if (!m[2]) return m[1];
+  const d = new Date(+m[1], +m[2] - 1, +(m[3] || 15));
+  return d.toLocaleDateString(
+    "en-US",
+    m[3] ? { month: "long", day: "numeric", year: "numeric" } : { month: "long", year: "numeric" },
+  );
 };
 const coordText = (p) =>
   `${Math.abs(p.lat).toFixed(2)}° ${p.lat >= 0 ? "N" : "S"}, ${Math.abs(p.lon).toFixed(2)}° ${p.lon >= 0 ? "E" : "W"}`;
@@ -134,7 +137,7 @@ function statusBadge(p) {
 }
 function visitedBadge(p) {
   return p.visited
-    ? `<span class="visited">✔ Visited ${esc(fmtMonth(p.visited))}</span>`
+    ? `<span class="visited">✔ Visited${fmtVisited(p.visited) ? " " + esc(fmtVisited(p.visited)) : ""}</span>`
     : `<span class="not-visited">Not visited yet</span>`;
 }
 function dot(color) {
