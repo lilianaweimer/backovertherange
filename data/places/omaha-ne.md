@@ -2,8 +2,8 @@
 # Copy this file to data/places/<place-id>.md
 # The file name (without .md) IS the place id, e.g. data/places/sisson-ca.md -> sisson-ca
 name: Omaha
-parent: [Nebraska]
-region:
+parent:
+region: [Nebraska]
 lat: 41.2586096
 lon: -95.937792
 coords_source: # e.g. "USGS GNIS 1659136", or "OpenStreetMap" / "1885 map" if not in GNIS
