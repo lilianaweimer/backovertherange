@@ -24,6 +24,8 @@ problem is found, the script stops with an error so nothing broken goes live.
 import csv
 import datetime
 import io
+import hashlib
+import html
 import json
 import re
 import shutil
@@ -80,12 +82,12 @@ def read_markdown_file(path):
 
 
 def to_html(body):
-    return markdown.markdown(body) if body else ""
+    return markdown.markdown(body, extensions=["tables"]) if body else ""
 
 
 def page_html(body):
     """Markdown for whole pages: ## headings get ids so the page can link to them."""
-    return markdown.markdown(body, extensions=["toc"]) if body else ""
+    return markdown.markdown(body, extensions=["toc", "tables"]) if body else ""
 
 
 def read_more(path, value, label):
@@ -119,6 +121,20 @@ def check_image(path, file_name):
         problem(path, f"image '{name}' isn't in site/images/. Upload it there, or check the spelling.")
         return ""
     return "images/" + name
+
+
+def visited_value(path, value):
+    """'yes', a year, a year and month, or a full date. Returns '' when not visited."""
+    if value is None or value is False or plain(value).lower() in ("", "no"):
+        return ""
+    if value is True or plain(value).lower() == "yes":
+        return "yes"
+    text = plain(value)
+    if re.fullmatch(r"\d{4}(-\d{2}(-\d{2})?)?", text):
+        return text
+    problem(path, f"'visited: {text}' isn't something the site understands. Use yes, a year (2018), "
+                  "a year and month (2018-07), or a full date (2018-07-10).")
+    return ""
 
 
 def plain(value):
@@ -246,7 +262,7 @@ def load_places():
             "status": status,
             "status_summary": plain(fields.get("status_summary")),
             "former_names": as_list(fields.get("former_names")),
-            "visited": plain(fields.get("visited")),
+            "visited": visited_value(path, fields.get("visited")),
             "added": date_added(path),
             "coords_source": plain(fields.get("coords_source")),
             "photos": load_photos(path, fields.get("photos")),
@@ -300,6 +316,14 @@ def problems_for(path):
     return any(x.startswith(f"{path.relative_to(ROOT)}:") for x in problems)
 
 
+LONG_PASSAGE = 700  # characters; longer passages without an excerpt fold after the first paragraph
+
+
+def first_page(page):
+    m = re.match(r"\s*(\d+)", str(page))
+    return int(m.group(1)) if m else 0
+
+
 def load_entries(guides, places):
     count = 0
     for path in sorted((DATA / "entries").glob("**/*.md")):
@@ -318,19 +342,97 @@ def load_entries(guides, places):
             continue
         if not plain(fields.get("page")):
             problem(path, "'page' is missing.")
-        if not body:
-            problem(path, "the quote is missing. Paste the guide's words below the second '---'.")
+        illustration = plain(fields.get("illustration"))
+        facts = fields.get("facts") or []
+        if isinstance(facts, str):
+            facts = [facts]
+        if not isinstance(facts, list) or any(isinstance(f, dict) for f in facts):
+            problem(path, "'facts' should be a list, one line per line of the box, each starting with '  - '. "
+                          "Wrap a line in quotes if it has a ': ' in it.")
+            facts = []
+        if not body and not illustration and not facts:
+            problem(path, "the quote is missing. Paste the guide's words below the second '---' "
+                          "(or, for a place the guide only shows in a picture, fill in 'illustration:').")
+        excerpt = plain(fields.get("excerpt"))
+        quote_html = to_html(body)
+        if excerpt:
+            excerpt_html = to_html(excerpt)
+        else:
+            # No excerpt written: a long passage shows its first paragraph and folds away
+            # the rest; a short one shows in full.
+            paras = [b for b in re.split(r"\n\s*\n", body.strip()) if b.strip()] if body else []
+            long = len(body or "") > LONG_PASSAGE
+            excerpt_html = to_html(paras[0]) if long and len(paras) > 1 else ""
         places[pid]["entries"].append({
             "guide": gid,
             "name_in_guide": plain(fields.get("name_in_guide")) or places[pid]["name"],
             "page": plain(fields.get("page")),
             "section": plain(fields.get("section")),
             "summary": plain(fields.get("summary")),
-            "quote_html": to_html(body),
+            "excerpt_html": excerpt_html,  # empty: the whole passage is short enough to show
+            "quote_html": quote_html,
             "quote_md": body,  # for the downloads only; dropped from data.json
+            "illustration": illustration,
+            "image": check_image(path, fields.get("image")) if fields.get("image") else "",
+            "facts": [plain(f) for f in facts if plain(f)],
         })
         count += 1
     return count
+
+
+SNIPPET = 200  # characters of plain text kept on the map for popups and Compare
+
+
+def text_of(fragment):
+    """Plain text from an HTML fragment, for snippets."""
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", fragment or ""))).strip()
+
+
+def split_out_details(places):
+    """Move each place's long text out of the map data. Returns {place id: details}."""
+    details = {}
+    for place in places:
+        d = {"notes_html": place.pop("notes_html", ""), "entries": []}
+        for e in place["entries"]:
+            quote_html, excerpt_html = e.pop("quote_html"), e.pop("excerpt_html")
+            d["entries"].append({"quote_html": quote_html, "excerpt_html": excerpt_html})
+            e["has_text"] = bool(quote_html)
+            t = text_of(excerpt_html or quote_html)
+            e["snippet"] = t if len(t) <= SNIPPET else t[:SNIPPET].rsplit(" ", 1)[0]
+        details[place["id"]] = d
+    return details
+
+
+MAX_IMAGE = 1600  # pixels on the long side; bigger photos and scans are shrunk in the published copy
+
+
+def resize_images(folder):
+    """Shrink oversized JPEG and PNG images in the published copy (site/images/ is left alone)."""
+    try:
+        from PIL import Image, ImageOps
+    except ImportError:
+        print("Note: Pillow isn't installed, so images were published at full size.")
+        return
+    shrunk = []
+    for path in sorted(folder.rglob("*")):
+        if path.suffix.lower() not in (".jpg", ".jpeg", ".png") or not path.is_file():
+            continue
+        try:
+            with Image.open(path) as im:
+                if max(im.size) <= MAX_IMAGE:
+                    continue
+                before = path.stat().st_size
+                im = ImageOps.exif_transpose(im)  # phone photos store their rotation separately
+                im.thumbnail((MAX_IMAGE, MAX_IMAGE), Image.LANCZOS)
+                if path.suffix.lower() == ".png":
+                    im.save(path, optimize=True)
+                else:
+                    im.convert("RGB").save(path, quality=80, optimize=True, progressive=True)
+                shrunk.append(f"{path.name} ({before // 1024} KB -> {path.stat().st_size // 1024} KB)")
+        except OSError as err:
+            print(f"Note: couldn't resize {path.name}: {err}")
+    if shrunk:
+        print(f"Shrank {len(shrunk)} image(s) wider or taller than {MAX_IMAGE}px: " + ", ".join(shrunk))
 
 
 SITE_DEFAULTS = {"goatcounter": "", "tagline": "", "marquee": [], "contact_email": "",
@@ -490,7 +592,8 @@ def write_downloads(site, guides, places, version):
                 "publisher", "kind", "scan_url", "hathitrust_url", "covers"]
     p_fields = ["id", "name", "parent", "region", "lat", "lon", "precision", "coords_source",
                 "category", "status", "status_summary", "former_names", "tags", "visited"]
-    e_fields = ["place", "guide", "name_in_guide", "page", "section", "summary", "quote"]
+    e_fields = ["place", "guide", "name_in_guide", "page", "section", "summary", "quote",
+                "illustration", "facts"]
     out_guides = [{k: g[k] for k in g_fields} for g in guides.values()]
     out_places, out_entries = [], []
     for p in places.values():
@@ -498,7 +601,8 @@ def write_downloads(site, guides, places, version):
         for e in p["entries"]:
             out_entries.append({"place": p["id"], "guide": e["guide"], "name_in_guide": e["name_in_guide"],
                                 "page": e["page"], "section": e["section"], "summary": e["summary"],
-                                "quote": e["quote_md"]})
+                                "quote": e["quote_md"], "illustration": e["illustration"],
+                                "facts": e["facts"]})
     about = {
         "title": "Back Over the Range",
         "url": site["url"],
@@ -531,7 +635,7 @@ def main():
     pages = load_pages(site, guides)
 
     for place in places.values():
-        place["entries"].sort(key=lambda e: (guides[e["guide"]]["year"], e["guide"]))
+        place["entries"].sort(key=lambda e: (guides[e["guide"]]["year"], e["guide"], first_page(e["page"])))
 
     if problems:
         print(f"Found {len(problems)} problem(s):\n")
@@ -565,7 +669,16 @@ def main():
         "illustrations": collections,
         "pages": pages,
     }
-    (DIST / "data.json").write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
+    # The map only needs names, points and a short snippet, so the long text (the guides'
+    # passages and today's notes) goes into one small file per place, fetched when its page opens.
+    details = split_out_details(out["places"])
+    out["version"] = hashlib.sha1(json.dumps(details, sort_keys=True).encode()).hexdigest()[:10]
+    (DIST / "places").mkdir()
+    for pid, d in details.items():
+        d["version"] = out["version"]  # the page checks this matches the map data it already has
+        (DIST / "places" / f"{pid}.json").write_text(json.dumps(d, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    (DIST / "data.json").write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    resize_images(DIST / "images")
     print(f"Built the site into {DIST.relative_to(ROOT)}/")
 
 

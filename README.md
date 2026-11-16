@@ -81,8 +81,9 @@ place's id. Use lowercase and dashes, and add the state so ids stay unique: `sis
   its parent on the Places page and the parent's page, and can have its own entries (the passage
   about just that spot; keep the general intro in the parent's entry). Sub-places can nest. If you
   can't pin one down, leave `lat`/`lon` empty and it uses the parent's point, marked approximate.
-- `visited` (optional): when you went there yourself, e.g. `2018-07`. Shown as a "Visited" mark on
-  the place.
+- `visited` (optional): if you've been there yourself. Write `yes` when you don't know when, or as
+  much of the date as you know: `2018`, `2018-07` or `2018-07-10`. Shown as "Visited", "Visited
+  2018", "Visited July 2018" or "Visited July 10, 2018". Leave it blank if you haven't been.
 - `coords_source`: where the coordinates came from, e.g. `USGS GNIS 1659136` (the GNIS feature ID)
   or `OpenStreetMap`. Shown on the place page.
 - `precision`: `exact`, `approximate` (shown with a dashed outline), or `unknown`.
@@ -104,7 +105,39 @@ place's id. Use lowercase and dashes, and add the state so ids stay unique: `sis
   links to sources.
 
 **A new entry:** copy `templates/entry.md` to `data/entries/<guide-id>/<place-id>.md`, fill in
-`page` and the other lines, and paste the guide's words below the second `---`.
+`page` and the other lines, and paste the guide's words below the second `---`. A blank line starts
+a new paragraph; two spaces at the end of a line make a line break.
+
+- **Several passages from one guide** (Denver on p. 11 and again on pp. 17–22): give each its own
+  file with the same `place:`, e.g. `denver-co.md` and `denver-co-p17.md`. The place page shows one
+  section per guide, with the passages in page order.
+- **Long passages:** anything over about 700 characters folds after its first paragraph, with a
+  "Read the full passage" button. To choose the opening lines yourself, add
+  `excerpt: "The lines to show first."`. The map popup uses `summary`, then `excerpt`, then the
+  start of the passage, taking the oldest guide's entry when a place has several.
+- **Places only shown in an engraving:** leave the text empty and add
+  `illustration: "Cathedral Spires, Garden of the Gods"`, plus `image: cathedral-spires.jpg` once
+  the scan is in `site/images/`.
+- **Distance lists and other tables:** use a Markdown table (dot leaders become columns):
+  ```
+  | Distances from Manitou | Miles |
+  | --- | ---: |
+  | Manitou Grand Caverns | 1 |
+  | Ute Pass and Rainbow Falls | 1½ |
+  ```
+- **Boxed fact panels** (like Pueblo's "Population, 25,000"): list the printed lines under `facts:`,
+  one per line, and they show in a box above the passage:
+  ```
+  facts:
+    - "PUEBLO,"
+    - "Commercial and Manufacturing City."
+    - "Population, 25,000."
+  ```
+
+**Image sizes:** shrink scans and photos before uploading (see "Shrinking images" in the Notion
+guide: [Squoosh](https://squoosh.app), about 1600px on the long side, JPEG quality about 75). As a
+safety net, the build also shrinks any JPEG or PNG bigger than 1600px in the published site; the
+copy in `site/images/` is left as it is.
 
 **Illustrations:** upload the image to `site/images/`, then add an item to the collection's file in
 `data/illustrations/` (see the example in `karst.yml`). Give it a `place:` and it also shows on that
@@ -189,10 +222,13 @@ Leave it empty and the counter stays hidden.
 - `site/` holds the page itself: `index.html`, `style.css`, `app.js`. It is one page; the part after
   `#` picks what to show (`#/place/lake-tahoe-ca`, `#/guide/wood-1889`, `#/compare`, `#/about`). The
   map is [Leaflet](https://leafletjs.com) on OpenStreetMap tiles; no accounts or keys.
-- `scripts/build.py` reads `data/`, checks everything, and writes `dist/data.json` next to a copy of
-  `site/`. It also writes `dist/downloads/`: the same data as one JSON file and three CSV files
-  (guides, places, entries), without site-only fields like colors and photos, for others to reuse
-  and cite.
+- `scripts/build.py` reads `data/`, checks everything, and writes a copy of `site/` to `dist/` with
+  the data. `dist/data.json` holds what the map and lists need (names, points, page numbers and a
+  short snippet of each passage); the full passages and today's notes go in one small file per
+  place, `dist/places/<place-id>.json`, which a place's page loads when it opens. That keeps the map
+  quick with thousands of entries. The build also shrinks published images over 1600px. It also
+  writes `dist/downloads/`: the same data as one JSON file and three CSV files (guides, places,
+  entries), without site-only fields like colors and photos, for others to reuse and cite.
 - `.github/workflows/site.yml` runs the build and publishes `dist/` to GitHub Pages.
 
 To add a status or category, add it to the lists at the top of `scripts/build.py`, and give a status
