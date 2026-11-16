@@ -1,0 +1,12 @@
+{
+  "name": "backovertherange",
+  "private": true,
+  "description": "Formatting tooling for the Back Over the Range site. The site itself is built by scripts/build.py.",
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "^3.10.1"
+  }
+}

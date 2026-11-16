@@ -23,12 +23,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # full history, so the site knows when each place was added
+          fetch-depth: 0 # full history, so the site knows when each place was added
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
       - run: pip install -r requirements.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      - name: Check formatting
+        run: npm run format:check
       - name: Check the data and build the site
         run: python scripts/build.py
       - uses: actions/upload-pages-artifact@v3

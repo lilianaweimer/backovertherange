@@ -22,8 +22,8 @@
   kind: Railroad guide
   color: "#4B5632"
   covers: Colorado to Puget Sound
-  scan_url: ""        # Internet Archive link
-  hathitrust_url: ""  # optional
+  scan_url: "https://archive.org/details/overrangetogolde02wood/" # Internet Archive link
+  hathitrust_url: "" # optional
   summary: >
     A route-by-route guide: each section follows a rail line and describes its
     depots, towns and sights in turn.
@@ -39,7 +39,7 @@
   kind: Travelogue
   color: "#5A231D"
   covers: Colorado and the Rockies
-  scan_url: ""
+  scan_url: "https://archive.org/details/crestofcontinent0000erne/"
   hathitrust_url: ""
   summary: >
     An account of a summer's trip through the Rocky Mountains, published by
