@@ -239,6 +239,12 @@ function showMap(params) {
 
 // ---- Pages ---------------------------------------------------------------------
 
+// "Read more": related books and articles, from read_more in the data. Nothing shows when the list is empty.
+function readMore(items) {
+  if (!items || !items.length) return "";
+  return `<section class="panel read-more"><h2>Read more</h2><ul>${items.map((h) => `<li>${h}</li>`).join("")}</ul></section>`;
+}
+
 function crumbs(...parts) {
   return `<nav class="crumbs" aria-label="Breadcrumb">${parts.map(([text, href]) => href ? `<a href="${esc(href)}">${esc(text)}</a>` : `<span>${esc(text)}</span>`).join(" › ")}</nav>`;
 }
@@ -295,6 +301,7 @@ function placePage(id) {
         ${kids.length ? `<section class="panel"><h2>Places in ${esc(p.name)}</h2>
           <ul class="sub-places">${kids.map((k) => `<li>${dot(placeColor(k))}<a href="#/place/${esc(k.id)}">${esc(k.name)}</a>${k.entries.length ? ` <span class="meta">${k.entries.map(cite).join(" <span class=sep>·</span> ")}</span>` : ""}</li>`).join("")}</ul>
         </section>` : ""}
+        ${readMore(p.read_more)}
         ${pager}
       </div>
       <div class="place-side">
@@ -404,6 +411,7 @@ function guidePage(id) {
         <h2>Places in this book, in page order</h2>
         ${list.length ? `<ol class="page-order">${list.map(({ p, e }) => `<li><a href="#/place/${esc(p.id)}">${esc(p.name)}</a> <span class="meta">${esc(pageRef(e.page))}</span></li>`).join("")}</ol>` : underConstruction("Entries are being added.")}
       </section>
+      <div>
       <section class="panel">
         <h2>At a glance</h2>
         <dl class="glance">
@@ -414,6 +422,8 @@ function guidePage(id) {
           ${shared.length ? `<dt>Illustrations</dt><dd>${shared.map((c) => `<a href="#/illustrations/${esc(c.id)}">${esc(c.title)}</a>`).join(", ")}</dd>` : ""}
         </dl>
       </section>
+      ${readMore(g.read_more)}
+      </div>
     </div>`;
 }
 
