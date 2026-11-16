@@ -61,6 +61,9 @@ state so ids stay unique: `sisson-ca`, `lucin-ut`, `denver-co`.
   result, and copy its latitude and longitude in decimal degrees. If the place isn't in
   GNIS, right-click the spot in [OpenStreetMap](https://www.openstreetmap.org) instead and
   set `precision: approximate` if you're unsure. West of Greenwich is negative.
+- `region`: the state or province. For a river, trail or range that crosses
+  several, use a list: `region: [Montana, North Dakota, South Dakota]`. It
+  then shows under each one in Compare.
 - `parent` (optional): for a place inside another, like Golden Gate Park in
   San Francisco, the id of the place it's in: `parent: san-francisco-ca`. It gets
   its own marker and page, is listed under its parent on the Places page and the
