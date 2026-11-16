@@ -137,7 +137,7 @@ function statusBadge(p) {
 }
 function visitedBadge(p) {
   return p.visited
-    ? `<span class="visited">✔ Visited${fmtVisited(p.visited) ? " " + esc(fmtVisited(p.visited)) : ""}</span>`
+    ? `<span class="visited">Visited${fmtVisited(p.visited) ? " " + esc(fmtVisited(p.visited)) : ""}</span>`
     : `<span class="not-visited">Not visited yet</span>`;
 }
 function dot(color) {
@@ -560,7 +560,7 @@ function placesPage() {
           (
             p,
           ) => `<tr data-names="${esc([p.name, p.region, ...p.former_names, ...p.entries.map((e) => e.name_in_guide), ...ancestors(p).map((x) => x.name)].join(" ").toLowerCase())}">
-        <td${p.depth ? ` class="sub" style="padding-left:${0.6 + 1.2 * p.depth}em"` : ""}>${p.depth ? '<span class="sub-mark" aria-hidden="true">↳ </span>' : ""}${dot(placeColor(p))}<a href="#/place/${esc(p.id)}">${esc(p.name)}</a>${newBadge(p)}${p.visited ? ' <span class="visited small" title="Visited">✔</span>' : ""}</td>
+        <td${p.depth ? ` class="sub" style="padding-left:${0.6 + 1.2 * p.depth}em"` : ""}>${p.depth ? '<span class="sub-mark" aria-hidden="true">↳ </span>' : ""}${dot(placeColor(p))}<a href="#/place/${esc(p.id)}">${esc(p.name)}</a>${newBadge(p)}${p.visited ? ' <span class="visited small">Visited</span>' : ""}</td>
         <td>${esc(p.region)}</td>
         <td>${p.entries.length ? citeAll(p, "<br>") : '<span class="meta">None yet</span>'}</td>
         <td>${statusBadge(p)}</td></tr>`,
