@@ -442,15 +442,34 @@ button.btn {
   left: 16px;
   bottom: 24px;
   z-index: 500;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  padding: 10px 14px;
+  max-width: min(320px, calc(100% - 32px));
+  padding: 8px 14px;
   font: 13px var(--heading);
   background: var(--paper);
   border: 4px ridge #9dbf8e;
 }
-.key span {
+.key details {
+  border: 0;
+  padding: 0;
+}
+.key summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+.key-count {
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+.key-items {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 6px;
+  /* A long list of books scrolls inside the key instead of covering the map. */
+  max-height: 40vh;
+  overflow-y: auto;
+}
+.key-items > span {
   display: flex;
   align-items: center;
 }
@@ -1070,4 +1089,42 @@ details.guide-section {
 }
 #places-table td:nth-child(3) {
   white-space: nowrap;
+}
+
+/* On a computer the map page fits the window: header, map and footer, no page scroll. */
+@media (min-width: 761px) {
+  body:has(#map-page:not([hidden])) {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+  }
+  body:has(#map-page:not([hidden])) main {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  body:has(#map-page:not([hidden])) .map-page {
+    flex: 1;
+    height: auto;
+    min-height: 420px;
+  }
+  /* On a short window the whole sidebar scrolls rather than the page. */
+  body:has(#map-page:not([hidden])) .map-side {
+    overflow-y: auto;
+  }
+  body:has(#map-page:not([hidden])) .place-list {
+    min-height: 200px;
+  }
+  body:has(#map-page:not([hidden])) .map-wrap {
+    min-height: 0;
+  }
+  body:has(#map-page:not([hidden])) .page:empty {
+    display: none;
+  }
+  body:has(#map-page:not([hidden])) .site-foot {
+    gap: 6px;
+    padding: 10px 16px 12px;
+  }
 }

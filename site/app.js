@@ -215,15 +215,22 @@ function popupHtml(p) {
   </div>`;
 }
 
+const KEY_OPEN_MAX = 4; // books
 function renderKey() {
   const used = DATA.guides.filter((g) =>
     DATA.places.some((p) => placeGuides(p).length === 1 && placeGuides(p)[0] === g.id),
   );
   const shown = used.length ? used : DATA.guides;
-  $("key").innerHTML = `<strong>Key</strong>
-    ${shown.map((g) => `<span>${dot(guideColor(g))}<em>${esc(g.short_title)}</em></span>`).join("")}
-    <span>${dot(MULTI_COLOR)}In multiple guides</span>
-    <span><span class="dot dashed"></span>Approximate location</span>`;
+  // The key folds up so a long list of books doesn't cover the map. It starts open while it's short.
+  const open = shown.length <= KEY_OPEN_MAX && window.innerWidth >= 760;
+  $("key").innerHTML = `<details${open ? " open" : ""}>
+    <summary>Key${shown.length > 1 ? ` <span class="key-count">${plural(shown.length, "book")}</span>` : ""}</summary>
+    <div class="key-items">
+      ${shown.map((g) => `<span>${dot(guideColor(g))}<em>${esc(g.short_title)}</em></span>`).join("")}
+      <span>${dot(MULTI_COLOR)}In multiple guides</span>
+      <span><span class="dot dashed"></span>Approximate location</span>
+    </div>
+  </details>`;
 }
 
 // ---- Map filters --------------------------------------------------------------
