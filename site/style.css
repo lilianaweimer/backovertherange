@@ -763,6 +763,14 @@ details summary {
   color: var(--ink-mute);
   text-align: center;
 }
+/* A real cover photo keeps its own shape, inside the same frame. */
+.guide-head img.cover {
+  display: block;
+  width: 100%;
+  height: auto;
+  align-self: start;
+  aspect-ratio: auto;
+}
 .guide-head .cover .dot {
   width: 40px;
   height: 40px;

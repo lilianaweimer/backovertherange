@@ -6,6 +6,8 @@
 # kind:  what sort of book, in your own words, e.g. Railroad guide, Road guide,
 #        Travelogue, Route 66 guide. Same words = grouped together on the site.
 # color: the map marker color for this guide, like #4B5632 (from the cover)
+# cover: optional photo of the book's cover, e.g. cover: wood-1889-cover.jpg
+#        Put the file in site/images/ first. Leave it out to show the plain placeholder.
 # summary: a few factual sentences for the guide's page (Markdown works)
 # read_more: optional list of related books or articles, one per line, in quotes:
 #   read_more:
