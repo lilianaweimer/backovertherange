@@ -54,8 +54,7 @@ npm run format:check  # only report
 ```
 
 Long paragraphs, including transcribed quotes, are rewrapped at 100 columns; that only changes where
-the lines break in the file, not how the text reads on the site. The starter files in `templates/`
-are left alone to keep their aligned comments.
+the lines break in the file, not how the text reads on the site.
 
 ## Adding data
 

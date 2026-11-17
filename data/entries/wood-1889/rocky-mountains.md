@@ -1,11 +1,10 @@
 ---
-# Copy this file to data/entries/<guide-id>/<place-id>.md
-guide: wood-1889 # an id from data/guides.yml, e.g. wood-1889
-place: rocky-mountains # a place id (file name in data/places), e.g. lake-tahoe-ca
-name_in_guide: Rocky Mountains # the name exactly as the guide spells it
-page: 11 # page number, or a range like "15-25"
-section: From the Missouri River to Denver # chapter or rail line it appears under (optional)
-summary: # one-line paraphrase (optional)
+guide: wood-1889
+place: rocky-mountains
+name_in_guide: Rocky Mountains
+page: 11
+section: From the Missouri River to Denver
+summary: I know no external picture of the Alps that can be placed beside it
 ---
 
 The view of the Rocky Mountains, which the traveler gains on approaching Denver from the east is one
