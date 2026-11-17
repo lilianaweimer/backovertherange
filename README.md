@@ -74,8 +74,8 @@ sizes" below), then add a `cover:` line to that guide's block with the file name
 ```
 
 It shows at the top of the guide's page, in place of the colored placeholder. Leave the line out and
-the placeholder stays. Any shape works; the frame fits the picture. The check fails if the file
-name doesn't match a file in `site/images/`.
+the placeholder stays. Any shape works; the frame fits the picture. The check fails if the file name
+doesn't match a file in `site/images/`.
 
 **A new place:** copy `templates/place.md` to `data/places/<place-id>.md`. The file name is the
 place's id. Use lowercase and dashes, and add the state so ids stay unique: `sisson-ca`, `lucin-ut`,
