@@ -8,8 +8,8 @@ Reads:
     data/site.yml         site-wide settings: tagline, marquee, contact, visitor counter
     content/*.md          the About and Learn more pages
     data/guides.yml
-    data/places/<place-id>.md
-    data/entries/<guide-id>/<place-id>.md
+    data/places/<place-id>.md                 (subfolders allowed, e.g. places/colorado/denver-co.md)
+    data/entries/<guide-id>/<place-id>.md     (subfolders allowed inside the guide's folder)
     data/illustrations/<collection-id>.yml
 Writes:
     dist/                 a copy of site/ plus...
@@ -215,11 +215,20 @@ def load_photos(path, raw):
 
 def load_places():
     places = {}
-    for path in sorted((DATA / "places").glob("*.md")):
+    seen = {}  # place id -> file, to catch the same name used in two folders
+    # Subfolders are only for filing: the id is the file name, wherever the file sits.
+    # Sorted by file name, so moving a file between folders doesn't change the order.
+    for path in sorted((DATA / "places").rglob("*.md"), key=lambda p: (p.name, p)):
         pid = path.stem
         if not ID_PATTERN.match(pid):
             problem(path, "file name must be lowercase letters, numbers and dashes, e.g. seattle-wa.md.")
             continue
+        if pid in seen:
+            problem(path, f"another place file has the same name: {seen[pid].relative_to(ROOT)}. "
+                          "Each place file needs its own name, even in different folders. "
+                          "Rename one (e.g. springfield-il.md and springfield-mo.md).")
+            continue
+        seen[pid] = path
         fields, body = read_markdown_file(path)
         if fields is None:
             continue
@@ -322,17 +331,28 @@ def first_page(page):
 
 def load_entries(guides, places):
     count = 0
-    for path in sorted((DATA / "entries").glob("**/*.md")):
+    entries_dir = DATA / "entries"
+    # Sorted by guide folder, then file name, so filing into subfolders doesn't change the order.
+    by_guide_then_name = lambda p: (p.relative_to(entries_dir).parts[0], p.name, p)
+    for path in sorted(entries_dir.rglob("*.md"), key=by_guide_then_name):
         fields, body = read_markdown_file(path)
         if fields is None:
             continue
-        gid = plain(fields.get("guide")) or path.parent.name
+        # The guide is the first folder under data/entries/. Any folders below that are
+        # only for filing, e.g. data/entries/wood-1889/colorado/denver-co.md.
+        parts = path.relative_to(entries_dir).parts
+        folder = parts[0] if len(parts) > 1 else ""
+        gid = plain(fields.get("guide")) or folder
         pid = plain(fields.get("place")) or path.stem
+        if not gid:
+            problem(path, "this file should sit in its guide's folder, e.g. data/entries/wood-1889/.")
+            continue
         if gid not in guides:
             problem(path, f"guide '{gid}' is not in data/guides.yml.")
             continue
-        if path.parent.name != gid:
-            problem(path, f"this file says guide '{gid}' but sits in the folder '{path.parent.name}'.")
+        if folder != gid:
+            problem(path, f"this file says guide '{gid}' but sits in the folder '{folder or 'entries'}'. "
+                          f"Move it into data/entries/{gid}/.")
         if pid not in places:
             problem(path, f"place '{pid}' has no file. Create data/places/{pid}.md (copy templates/place.md).")
             continue

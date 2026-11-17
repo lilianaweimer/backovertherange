@@ -13,7 +13,9 @@ data/
   site.yml                         tagline, scrolling marquee, contact email, visitor counter
   guides.yml                       one block per guide edition (wood-1889, ingersoll-1885, ...)
   places/lake-tahoe-ca.md          one file per real place: coordinates, today's status, your notes
+                                   (subfolders are fine, e.g. places/california/lake-tahoe-ca.md)
   entries/wood-1889/lake-tahoe-ca.md  one file per "this guide talks about this place": page + quote
+                                   (subfolders inside the guide's folder are fine too)
   illustrations/karst.yml          one file per illustration collection
 content/
   about.md                         the About page
@@ -136,6 +138,37 @@ a new paragraph; two spaces at the end of a line make a line break.
 guide: [Squoosh](https://squoosh.app), about 1600px on the long side, JPEG quality about 75). As a
 safety net, the build also shrinks any JPEG or PNG bigger than 1600px in the published site; the
 copy in `site/images/` is left as it is.
+
+**Filing into folders (optional):** once there are lots of files, you can sort places and entries
+into subfolders however you like (by state, by route, by chapter). Folders are only for your own
+filing: nothing on the site changes, a place's id is still its file name, and region still comes
+from the `region:` line. Links like `parent: denver-co` and an entry's `place: denver-co` keep
+working wherever the files sit.
+
+```
+data/places/denver-co.md                         fine
+data/places/colorado/denver-co.md                also fine
+data/places/colorado/front-range/denver-co.md    also fine (any depth)
+
+data/entries/wood-1889/denver-co.md              fine
+data/entries/wood-1889/colorado/denver-co.md     also fine
+data/entries/wood-1889/chapter-03/denver-co.md   also fine
+```
+
+Two rules:
+
+- **The guide's folder comes first** for entries: `data/entries/<guide-id>/...`. Anything below it
+  is up to you, but the first folder must be the guide's id.
+- **Every place file needs its own name**, even in different folders. `places/illinois/springfield.md`
+  and `places/missouri/springfield.md` would clash, so name them `springfield-il.md` and
+  `springfield-mo.md`. The check stops with a message naming both files if two share a name:
+
+```
+data/places/missouri/springfield.md: another place file has the same name: data/places/illinois/springfield.md. Each place file needs its own name, even in different folders. Rename one (e.g. springfield-il.md and springfield-mo.md).
+```
+
+To move a file on github.com, open it, click the pencil, and type the folder in front of the name
+(`colorado/` then the name); GitHub makes the folder for you. Moving a file keeps its "added" date.
 
 **Illustrations:** upload the image to `site/images/`, then add an item to the collection's file in
 `data/illustrations/` (see the example in `karst.yml`). Give it a `place:` and it also shows on that
