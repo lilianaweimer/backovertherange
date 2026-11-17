@@ -1,5 +1,5 @@
 ---
-# Copy this file to data/places/<place-id>.md
+# Copy this file to data/places/<place-id>.md (a subfolder is fine, e.g. data/places/colorado/<place-id>.md)
 # The file name (without .md) IS the place id, e.g. data/places/sisson-ca.md -> sisson-ca
 name:            # today's name, e.g. Mount Shasta
 parent:          # optional: the id of the place this one is inside, e.g. san-francisco-ca
