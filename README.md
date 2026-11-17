@@ -159,9 +159,10 @@ Two rules:
 
 - **The guide's folder comes first** for entries: `data/entries/<guide-id>/...`. Anything below it
   is up to you, but the first folder must be the guide's id.
-- **Every place file needs its own name**, even in different folders. `places/illinois/springfield.md`
-  and `places/missouri/springfield.md` would clash, so name them `springfield-il.md` and
-  `springfield-mo.md`. The check stops with a message naming both files if two share a name:
+- **Every place file needs its own name**, even in different folders.
+  `places/illinois/springfield.md` and `places/missouri/springfield.md` would clash, so name them
+  `springfield-il.md` and `springfield-mo.md`. The check stops with a message naming both files if
+  two share a name:
 
 ```
 data/places/missouri/springfield.md: another place file has the same name: data/places/illinois/springfield.md. Each place file needs its own name, even in different folders. Rename one (e.g. springfield-il.md and springfield-mo.md).
