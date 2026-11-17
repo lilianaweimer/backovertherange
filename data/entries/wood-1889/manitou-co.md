@@ -31,22 +31,22 @@ for a ride every morning. Carriage riding and excursions on foot are excellent m
 Following is a partial list of places of interest near Manitou, with the distance in miles from town
 attached:
 
-|                            |    |
-|----------------------------|---:|
-| Manitou Grand Caverns      |  1 |
-| Cave of the Winds          |  1 |
-| Ute Pass and Rainbow Falls | 1½ |
-| Red Cañon                  |  3 |
-| Crystal Park               |  3 |
-| Garden of the Gods         |  3 |
-| Glen Eyrie                 |  5 |
-| Monument Park by trail     | 7½ |
-| “ “ by carriage            |  9 |
-| Seven Lakes by horse trail |  9 |
-| “ “ by carriage road       | 25 |
-| North Cheyenne Cañon       | 8½ |
-| South Cheyenne Cañon       |  9 |
-| Summit of Pike's Peak      | 12 |
+|                            |     |
+| -------------------------- | --: |
+| Manitou Grand Caverns      |   1 |
+| Cave of the Winds          |   1 |
+| Ute Pass and Rainbow Falls |  1½ |
+| Red Cañon                  |   3 |
+| Crystal Park               |   3 |
+| Garden of the Gods         |   3 |
+| Glen Eyrie                 |   5 |
+| Monument Park by trail     |  7½ |
+| “ “ by carriage            |   9 |
+| Seven Lakes by horse trail |   9 |
+| “ “ by carriage road       |  25 |
+| North Cheyenne Cañon       |  8½ |
+| South Cheyenne Cañon       |   9 |
+| Summit of Pike's Peak      |  12 |
 
 In addition to these well-known localities there are scores of cañons, caves, water-falls and
 charming nooks which the sojourner for health or pleasure can seek out for himself. The village is
