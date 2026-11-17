@@ -657,7 +657,7 @@ function guidePage(id) {
   return `
     ${crumbs(["Guides", "#/guides"], [g.kind, "#/guides"], [g.short_title])}
     <div class="guide-head">
-      <div class="cover">${dot(guideColor(g))}<span>${esc(g.kind)}</span></div>
+      ${g.cover ? `<img class="cover" src="${esc(g.cover)}" alt="Cover of ${esc(g.short_title)}">` : `<div class="cover">${dot(guideColor(g))}<span>${esc(g.kind)}</span></div>`}
       <div>
         <h1><i>${esc(g.short_title)}</i></h1>
         ${subtitle ? `<p class="subtitle">${esc(subtitle)}</p>` : ""}

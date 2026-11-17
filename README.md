@@ -62,6 +62,21 @@ are left alone to keep their aligned comments.
 **A new guide:** add a block to `data/guides.yml`. Give it a short id like `baedeker-1909`, then
 make a folder `data/entries/baedeker-1909/`.
 
+**A guide's cover:** upload a photo of the cover to `site/images/` (shrink it first, see "Image
+sizes" below), then add a `cover:` line to that guide's block with the file name:
+
+```
+- id: wood-1889
+  short_title: Over the Range to the Golden Gate
+  ...
+  color: "#4B5632"
+  cover: wood-1889-cover.jpg
+```
+
+It shows at the top of the guide's page, in place of the colored placeholder. Leave the line out and
+the placeholder stays. Any shape works; the frame fits the picture. The check fails if the file name
+doesn't match a file in `site/images/`.
+
 **A new place:** copy `templates/place.md` to `data/places/<place-id>.md`. The file name is the
 place's id. Use lowercase and dashes, and add the state so ids stay unique: `sisson-ca`, `lucin-ut`,
 `denver-co`.
@@ -166,15 +181,15 @@ If it passes (green ✓), the site updates in a minute or two.
 
 ## Previewing on your own computer (optional)
 
-You need Python 3.
+You need Python 3. Type `python3`, not `python` (on a Mac, `python` can be the old Python 2).
 
 ```
-pip install -r requirements.txt
-python scripts/build.py
-python -m http.server -d dist 8000
+python3 -m pip install -r requirements.txt
+python3 scripts/build.py
+python3 -m http.server -d dist 8000
 ```
 
-Then open http://localhost:8000. Run `python scripts/build.py --check` to check without building.
+Then open http://localhost:8000. Run `python3 scripts/build.py --check` to check without building.
 
 ## Publishing: one-time setup
 

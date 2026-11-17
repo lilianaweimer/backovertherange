@@ -184,6 +184,7 @@ def load_guides():
             "kind": kind,
             "color": color,
             "covers": plain(g.get("covers")),
+            "cover": check_image(path, g.get("cover")),
             "summary_html": to_html(plain(g.get("summary"))),
             "notes": plain(g.get("notes")),
             "read_more": read_more(path, g.get("read_more"), f"{gid}: "),
