@@ -1,5 +1,5 @@
 ---
-# Copy this file to data/entries/<guide-id>/<place-id>.md
+# Copy this file to data/entries/<guide-id>/<place-id>.md (subfolders inside the guide folder are fine)
 # A second passage from the same guide gets its own file, e.g. denver-co-p17.md, with the same place:.
 guide:           # an id from data/guides.yml, e.g. wood-1889
 place:           # a place id (file name in data/places), e.g. lake-tahoe-ca
