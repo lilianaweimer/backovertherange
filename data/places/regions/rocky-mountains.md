@@ -7,7 +7,7 @@ lon: -110.9174311
 coords_source: USGS GNIS 897520
 precision: approximate
 category: natural-feature
-status: transformed
+status: extant
 status_summary:
 visited: yes
 former_names: []

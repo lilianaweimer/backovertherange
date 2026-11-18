@@ -1,8 +1,8 @@
 ---
 name: Clark's Magnetic Mineral Spring
 region: Colorado
-parent: pueblo-co # if you have a Pueblo place; then lat/lon can stay empty
-lat: # or your point at Clark St., Pueblo
+parent: pueblo-co
+lat:
 lon:
 coords_source: "Estimated near Clark St., Pueblo (site of Clark Spring Water Co.)"
 precision: approximate

@@ -7,7 +7,7 @@ lon: -104.8806247
 coords_source: USGS GNIS 203681
 precision: exact
 category: natural-feature
-status: unknown
+status: extant
 status_summary:
 visited:
 former_names: []

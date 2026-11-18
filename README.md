@@ -12,10 +12,11 @@ them and builds the map, and GitHub publishes it automatically.
 data/
   site.yml                         tagline, scrolling marquee, contact email, visitor counter
   guides.yml                       one block per guide edition (wood-1889, ingersoll-1885, ...)
-  places/lake-tahoe-ca.md          one file per real place: coordinates, today's status, your notes
-                                   (subfolders are fine, e.g. places/california/lake-tahoe-ca.md)
-  entries/wood-1889/lake-tahoe-ca.md  one file per "this guide talks about this place": page + quote
-                                   (subfolders inside the guide's folder are fine too)
+  places/colorado/denver-co.md     one file per real place: coordinates, today's status, your notes
+                                   (filed by state; multi-state features go in places/regions/)
+  entries/wood-1889/02-denver-to-pueblo/denver-co.md
+                                   one file per "this guide talks about this place": page + quote
+                                   (filed by guide, then by the guide's chapter)
   illustrations/karst.yml          one file per illustration collection
 content/
   about.md                         the About page
