@@ -198,11 +198,11 @@ from that book's page. `page:` can be a number (`53`, `xii`) or a word (`frontis
 `facing p. 40`), which is shown as written. Images can be `.jpg`, `.png` or `.webp`.
 
 ```yaml
-  - title: Over the Range
-    file: over-the-range/frontispiece.webp
-    guide: wood-1889
-    page: frontispiece
-    material: wood
+- title: Over the Range
+  file: over-the-range/frontispiece.webp
+  guide: wood-1889
+  page: frontispiece
+  material: wood
 ```
 
 You can do all of this on github.com: open a folder, choose **Add file → Create new file**, paste,
