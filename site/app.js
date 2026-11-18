@@ -155,17 +155,216 @@ function dot(color) {
 }
 function figure(it, cls = "") {
   const g = guides[it.guide];
+  // The book on one line, then page, material and engraver, so a dot never starts a line.
+  const rest = [
+    esc(pageRef(it.page)),
+    esc(it.material),
+    it.artist ? `engraved by ${esc(it.artist)}` : "",
+  ].filter(Boolean);
   const bits = [
     g ? `<i>${esc(g.short_title)}</i>` : "",
-    pageRef(it.page),
-    it.material,
-    it.artist,
+    rest.join(" <span class=sep>·</span> "),
   ].filter(Boolean);
+  // Name the place it shows, unless this is that place's own page.
+  const where =
+    it.place && places[it.place] && it.place !== currentPlace
+      ? `<br><a href="#/place/${esc(it.place)}">${esc(places[it.place].name)}</a>`
+      : "";
   return `<figure class="illus ${cls}">
-    ${it.src ? `<img src="${esc(it.src)}" alt="${esc(it.title)}" loading="lazy">` : `<div class="img-missing">Image coming soon</div>`}
-    <figcaption><strong>${esc(it.title)}</strong>${bits.length ? "<br>" + bits.join(" <span class=sep>·</span> ") : ""}</figcaption>
+    ${it.src ? zoomable(it) : `<div class="img-missing">Image coming soon</div>`}
+    <figcaption><strong>${esc(it.title)}</strong>${bits.map((b) => "<br>" + b).join("")}${where}</figcaption>
   </figure>`;
 }
+
+// ---- Large view of an illustration --------------------------------------------------
+// Click a picture on a page to see it large. Each one gets its own link (…?view=<file name>),
+// and the arrows step through the pictures on that page.
+
+let zoomList = []; // the pictures on the page now showing, in order
+let currentPlace = ""; // the place whose page is showing, if any
+// The picture as a button that opens the large view. 'it' needs src and title; guide, page,
+// material, artist and place are shown when there.
+function zoomable(it) {
+  let i = zoomList.findIndex((z) => z.src === it.src);
+  if (i < 0) {
+    const base = it.src
+      .split("/")
+      .pop()
+      .replace(/\.[^.]+$/, "");
+    let key = base;
+    for (let n = 2; zoomList.some((z) => z.key === key); n++) key = `${base}-${n}`;
+    i = zoomList.push({ ...it, key }) - 1;
+  }
+  return `<button type="button" class="zoom" data-zoom="${i}" aria-label="${esc(it.title)}: see it larger"><img src="${esc(it.src)}" alt="${esc(it.title)}" loading="lazy"></button>`;
+}
+
+let zoomAt = -1,
+  zoomPushed = false, // true when opening it added a step to the browser's history
+  zoomBackTo = null;
+const zoomDlg = () => $("lightbox");
+
+// The address of this page with ?view= set to 'key' (or removed when key is empty).
+function hashWith(key) {
+  const [path, query = ""] = location.hash.replace(/^#/, "").split("?");
+  const params = new URLSearchParams(query);
+  if (key) params.set("view", key);
+  else params.delete("view");
+  const q = params.toString();
+  return "#" + (path || "/") + (q ? "?" + q : "");
+}
+
+function fillZoom(i) {
+  const it = zoomList[i];
+  const g = guides[it.guide];
+  const pl = it.place && places[it.place];
+  zoomAt = i;
+  const img = $("lb-img");
+  img.classList.add("loading");
+  img.onload = img.onerror = () => img.classList.remove("loading");
+  img.alt = it.title;
+  img.src = it.src;
+  $("lb-title").textContent = it.title;
+  const rest = [
+    esc(pageRef(it.page)),
+    esc(it.material),
+    it.artist ? `engraved by ${esc(it.artist)}` : "",
+  ].filter(Boolean);
+  $("lb-meta").innerHTML = [
+    g
+      ? `${esc(g.author)}, <a href="#/guide/${esc(g.id)}"><i>${esc(g.short_title)}</i></a> (${esc(g.year)})`
+      : "",
+    rest.join(" <span class=sep>·</span> "),
+  ]
+    .filter(Boolean)
+    .join("<br>");
+  $("lb-actions").innerHTML = pl
+    ? `${it.place !== currentPlace ? `<a class="btn" href="#/place/${esc(it.place)}">See this place: ${esc(pl.name)}</a>` : ""}
+       <a class="btn" href="#/?place=${esc(it.place)}">Show on map</a>`
+    : "";
+  const several = zoomList.length > 1;
+  $("lb-count").textContent = several ? `${i + 1} of ${zoomList.length}` : "";
+  $("lb-prev").hidden = $("lb-next").hidden = !several;
+  // Fetch the neighbours now so stepping to them is instant.
+  for (const d of [-1, 1])
+    if (several) new Image().src = zoomList[(i + d + zoomList.length) % zoomList.length].src;
+}
+
+// Open the large view at the picture named 'key', or close it when there's none.
+function showZoom(key) {
+  const dlg = zoomDlg();
+  const i = key ? zoomList.findIndex((z) => z.key === key) : -1;
+  if (i < 0) {
+    zoomPushed = false;
+    if (dlg.open) dlg.close();
+    return;
+  }
+  fillZoom(i);
+  if (!dlg.open) {
+    zoomBackTo = document.activeElement;
+    document.body.classList.add("lb-open");
+    dlg.showModal();
+    $("lb-close").focus();
+  }
+}
+
+function openZoom(i) {
+  history.pushState(null, "", hashWith(zoomList[i].key));
+  zoomPushed = true;
+  showZoom(zoomList[i].key);
+}
+
+function closeZoom() {
+  if (zoomPushed) {
+    history.back(); // the page's address without ?view=; the router then closes it
+    return;
+  }
+  history.replaceState(null, "", hashWith(""));
+  showZoom("");
+}
+
+function stepZoom(d) {
+  if (zoomList.length < 2) return;
+  const i = (zoomAt + d + zoomList.length) % zoomList.length;
+  history.replaceState(null, "", hashWith(zoomList[i].key));
+  fillZoom(i);
+}
+
+function setUpZoom() {
+  document.body.insertAdjacentHTML(
+    "beforeend",
+    `<dialog id="lightbox" class="lightbox" aria-labelledby="lb-title">
+      <button type="button" id="lb-close" class="btn lb-close" aria-label="Close">✕ <span class="lb-close-word">Close</span></button>
+      <p id="lb-count" class="lb-count" aria-live="polite"></p>
+      <div class="lb-stage"><img id="lb-img" alt=""></div>
+      <button type="button" id="lb-prev" class="btn lb-arrow lb-prev" aria-label="Previous illustration">‹</button>
+      <button type="button" id="lb-next" class="btn lb-arrow lb-next" aria-label="Next illustration">›</button>
+      <div class="lb-caption">
+        <p class="lb-text"><strong id="lb-title"></strong><br><span id="lb-meta"></span></p>
+        <p id="lb-actions" class="buttons"></p>
+      </div>
+    </dialog>`,
+  );
+  const dlg = zoomDlg();
+  $("lb-close").addEventListener("click", closeZoom);
+  $("lb-prev").addEventListener("click", () => stepZoom(-1));
+  $("lb-next").addEventListener("click", () => stepZoom(1));
+  // Esc
+  dlg.addEventListener("cancel", (ev) => {
+    ev.preventDefault();
+    closeZoom();
+  });
+  // A click on the dimmed area around the picture closes it.
+  dlg.addEventListener("click", (ev) => {
+    if (ev.target === dlg || ev.target.classList.contains("lb-stage")) closeZoom();
+  });
+  dlg.addEventListener("keydown", (ev) => {
+    if (ev.key === "Tab") {
+      // Keep the keyboard inside the large view until it's closed.
+      const stops = [...dlg.querySelectorAll("button, a[href]")].filter(
+        (el) => !el.hidden && el.offsetParent,
+      );
+      const first = stops[0],
+        last = stops[stops.length - 1];
+      if (ev.shiftKey && document.activeElement === first) {
+        last.focus();
+        ev.preventDefault();
+      } else if (!ev.shiftKey && document.activeElement === last) {
+        first.focus();
+        ev.preventDefault();
+      }
+      return;
+    }
+    if (ev.altKey || ev.ctrlKey || ev.metaKey) return;
+    if (ev.key === "ArrowLeft") stepZoom(-1);
+    else if (ev.key === "ArrowRight") stepZoom(1);
+    else return;
+    ev.preventDefault();
+  });
+  // Swipe left or right on a phone.
+  let touch = null;
+  dlg.addEventListener(
+    "touchstart",
+    (ev) => (touch = ev.touches.length === 1 ? ev.touches[0] : null),
+    { passive: true },
+  );
+  dlg.addEventListener("touchend", (ev) => {
+    const t = ev.changedTouches[0];
+    if (!touch || !t) return;
+    const dx = t.clientX - touch.clientX,
+      dy = t.clientY - touch.clientY;
+    touch = null;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > 1.5 * Math.abs(dy)) stepZoom(dx < 0 ? 1 : -1);
+  });
+  dlg.addEventListener("close", () => {
+    document.body.classList.remove("lb-open");
+    $("lb-img").removeAttribute("src");
+    // Back to the picture that was open last, if it's still on the page.
+    const btn = document.querySelector(`[data-zoom="${zoomAt}"]`) || zoomBackTo;
+    if (btn && document.contains(btn)) btn.focus({ preventScroll: false });
+    zoomAt = -1;
+  });
+}
+
 const underConstruction = (what = "") =>
   `<p class="uc-line"><img src="images/under-construction.gif" alt="Under construction" width="600" height="32">${what ? "<br>" + esc(what) : ""}</p>`;
 // Places added in the last 30 days get a NEW! badge.
@@ -467,7 +666,7 @@ function placePage(id) {
     const pic = !e.illustration
       ? ""
       : e.image
-        ? `<figure class="entry-illus"><img src="${esc(e.image)}" alt="${esc(e.illustration)}" loading="lazy"><figcaption>${esc(e.illustration)}</figcaption></figure>`
+        ? `<figure class="entry-illus">${zoomable({ src: e.image, title: e.illustration, guide: e.guide, page: e.page, place: p.id })}<figcaption>${esc(e.illustration)}</figcaption></figure>`
         : `<p class="entry-illus-note">Shown in an illustration: “${esc(e.illustration)}”</p>`;
     const more = `Read the full passage${pages ? ` (${pages})` : ""} ▾`;
     const quote = !e.quote_html
@@ -811,17 +1010,25 @@ function collectionPage(id) {
   const c = collections[id];
   if (!c) return notFound("No collection with that id.");
   const books = DATA.guides.filter((g) => c.items.some((it) => it.guide === g.id));
-  const lead = c.items.find((it) => it.src);
   return `
     ${crumbs(["Illustrations", "#/illustrations"], [c.title])}
-    <div class="guide-head">
+    <div class="collection-head${c.cover ? " with-cover" : ""}">
       <div>
         <h1>${esc(c.title)}</h1>
         ${c.intro_html}
         <p class="meta-line">${[c.holding, c.dates].filter(Boolean).map(esc).join(" <span class=sep>·</span> ")}</p>
       </div>
-      ${lead ? figure(lead, "lead") : ""}
+      ${c.cover ? `<img class="collection-cover" src="${esc(c.cover)}" alt="">` : ""}
     </div>
+    <section class="panel">
+      <h2>The illustrations</h2>
+      ${
+        c.items.length
+          ? `<p class="meta">Click or tap a picture to see it larger.</p>
+             <div class="illus-grid">${c.items.map((it) => figure(it)).join("")}</div>`
+          : underConstruction("Illustrations are being added.")
+      }
+    </section>
     ${
       books.length
         ? `<section class="panel"><h2>Books that use them</h2>
@@ -829,21 +1036,7 @@ function collectionPage(id) {
       <tbody>${books.map((g) => `<tr><td><a href="#/guide/${esc(g.id)}"><i>${esc(g.short_title)}</i></a>, ${esc(g.author)}</td><td>${esc(g.year)}</td><td>${esc(g.publisher)}</td><td>${c.items.filter((it) => it.guide === g.id).length}</td></tr>`).join("")}</tbody></table>
     </section>`
         : ""
-    }
-    <section class="panel">
-      <h2>The illustrations</h2>
-      ${
-        c.items.length
-          ? `<div class="illus-grid">${c.items
-              .map((it) =>
-                it.place && places[it.place]
-                  ? `<a href="#/place/${esc(it.place)}" class="illus-link">${figure(it)}</a>`
-                  : figure(it),
-              )
-              .join("")}</div>`
-          : underConstruction("Illustrations are being added.")
-      }
-    </section>`;
+    }`;
 }
 
 function textPage(name, section) {
@@ -864,11 +1057,24 @@ function notFound(msg = "") {
 
 // ---- Router -------------------------------------------------------------------------
 
+let shownBase = null; // the page now drawn, without ?view=
 function route() {
   const raw = location.hash.replace(/^#\/?/, "");
   const [path, query = ""] = raw.split("?");
   const params = new URLSearchParams(query);
   const [section, id, sub] = path.split("/").map(decodeURIComponent);
+
+  // Opening, stepping through or closing the large view of a picture only changes ?view=,
+  // so the page under it stays as it is.
+  const view = params.get("view");
+  params.delete("view");
+  const base = path + (params.toString() ? "?" + params : "");
+  if (base === shownBase) {
+    showZoom(view);
+    return;
+  }
+  shownBase = null;
+  showZoom("");
 
   // Old links like #seattle-wa still open the place.
   if (section && !id && places[section]) {
@@ -894,6 +1100,8 @@ function route() {
   }
 
   $("map-page").hidden = true;
+  zoomList = [];
+  currentPlace = section === "place" ? id : "";
   let html, title;
   switch (section) {
     case "place":
@@ -954,6 +1162,8 @@ function route() {
   const el = target && $(target);
   if (el && section !== "illustrations") el.scrollIntoView({ block: "start" });
   else window.scrollTo(0, 0);
+  shownBase = base;
+  showZoom(view);
 }
 
 // Page interactions that need JavaScript.
@@ -962,6 +1172,11 @@ document.addEventListener("click", (ev) => {
     // Jump to the content without changing the address (the router owns the #).
     ev.preventDefault();
     $("view").focus();
+    return;
+  }
+  const zoom = ev.target.closest("[data-zoom]");
+  if (zoom) {
+    openZoom(Number(zoom.dataset.zoom));
     return;
   }
   const toggle = ev.target.closest("[data-passage]");
@@ -1072,6 +1287,7 @@ fetch("data.json")
     places = Object.fromEntries(data.places.map((p) => [p.id, p]));
     collections = Object.fromEntries(data.illustrations.map((c) => [c.id, c]));
     showFrame(data);
+    setUpZoom();
     setUpMap();
     setUpFilters();
     renderKey();
