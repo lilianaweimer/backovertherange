@@ -301,6 +301,10 @@ button.btn {
   border: 2px outset var(--sage-mid);
   background: var(--sage-light);
 }
+.status-extant {
+  background: var(--cream);
+  border-color: #d9c58a;
+}
 .status-unknown {
   background: #eee;
   border-color: #ddd;

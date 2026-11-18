@@ -102,8 +102,9 @@ place's id. Use lowercase and dashes, and add the state so ids stay unique: `sis
 - `coords_source`: where the coordinates came from, e.g. `USGS GNIS 1659136` (the GNIS feature ID)
   or `OpenStreetMap`. Shown on the place page.
 - `precision`: `exact`, `approximate` (shown with a dashed outline), or `unknown`.
-- `status`: `thriving`, `transformed`, `renamed`, `absorbed`, `declined`, `ghost-town`, `gone`, or
-  `unknown`.
+- `status`: `extant`, `thriving`, `transformed`, `renamed`, `absorbed`, `declined`, `ghost-town`,
+  `gone`, or `unknown`. Use `extant` when the place is still there and that's all you know (e.g.
+  Pikes Peak), without saying whether it's thriving or changed.
 - `category`: `town`, `depot`, `natural-feature`, `building`, `resort`, `mine`, `route`, or `other`.
 - `photos` (optional): your own photos. Upload them to `site/images/`, then list them:
   `photos: [{file: tahoe-2018.jpg, caption: "South shore, July 2018"}]`.

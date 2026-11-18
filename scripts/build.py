@@ -42,7 +42,7 @@ IMAGES = SITE / "images"
 # The fixed lists. Add a value here if you need a new one; the map colors
 # labels in site/app.js (STATUS_LABELS).
 CATEGORIES = {"town", "depot", "natural-feature", "building", "resort", "mine", "route", "other"}
-STATUSES = {"thriving", "transformed", "renamed", "absorbed", "declined", "ghost-town", "gone", "unknown"}
+STATUSES = {"extant", "thriving", "transformed", "renamed", "absorbed", "declined", "ghost-town", "gone", "unknown"}
 PRECISIONS = {"exact", "approximate", "unknown"}
 COLOR_PATTERN = re.compile(r"^#[0-9a-fA-F]{6}$")
 
