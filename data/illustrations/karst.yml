@@ -9,15 +9,11 @@ intro: >
   Continent* (1885), but some also appear in Wood's *Over the Range to the Golden Gate* (1889), from
   the same publisher. Many are signed by the engraver Karst.
 
-# One block per illustration. Only title is required.
-# file:     image in site/images/
-# guide:    guide id from data/guides.yml
-# page:     a number (53, xii) or a word (frontispiece, facing p. 40)
-# place:    place id; the illustration then shows on that place and in its map popup
-#           leave place out for one that isn't of a place, like a frontispiece
+# Engravings are listed once, in their book's file (e.g. wood-1889.yml), with also_in: karst.
+# They then show here too. Items listed here directly also work.
 items: []
 #  - title: Garden of the Gods
-#    file: karst-garden-of-the-gods.jpg
+#    file: engravings/ingersoll-1885/garden-of-the-gods.webp
 #    guide: ingersoll-1885
 #    page: 53
 #    place: garden-of-the-gods-co

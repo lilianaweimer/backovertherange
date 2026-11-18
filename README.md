@@ -188,22 +188,35 @@ data/places/missouri/springfield.md: another place file has the same name: data/
 To move a file on github.com, open it, click the pencil, and type the folder in front of the name
 (`colorado/` then the name); GitHub makes the folder for you. Moving a file keeps its "added" date.
 
-**Illustrations:** upload the image to `site/images/`, then add an item to the collection's file in
-`data/illustrations/` (see the example in `karst.yml`). Give it a `place:` and it also shows on that
-place's page and in its map popup. A new collection is a new `.yml` file in the same folder.
-
-`place:` is optional. An illustration that isn't of one place (a frontispiece, a title-page
-vignette) just leaves it out and shows only on its collection's page; its `guide:` still links it
-from that book's page. `page:` can be a number (`53`, `xii`) or a word (`frontispiece`,
-`facing p. 40`), which is shown as written. Images can be `.jpg`, `.png` or `.webp`.
+**Illustrations:** each collection is a `.yml` file in `data/illustrations/`. Each book gets its own
+file named after the guide id (e.g. `wood-1889.yml`), and every engraving is listed **once**, in its
+book's file. To also show it in another collection (like `karst.yml`, or a group such as engravings
+after Moran), add `also_in:` with that collection's file name. A collection like `karst.yml` can
+have no items of its own and just gather the tagged ones.
 
 ```yaml
-- title: Over the Range
-  file: over-the-range/frontispiece.webp
-  guide: wood-1889
-  page: frontispiece
-  material: wood
+# data/illustrations/wood-1889.yml
+title: Illustrations in Over the Range
+guide: wood-1889 # every item below is from this book
+items:
+  - title: Over the Range
+    file: engravings/wood-1889/frontispiece.webp
+    page: frontispiece
+  - title: Garden of the Gods
+    file: engravings/wood-1889/garden-of-the-gods.webp
+    page: 53
+    place: garden-of-the-gods-co
+    artist: Karst
+    also_in: [karst, moran]
 ```
+
+- `place:` is optional. With it, the illustration also shows on that place's page and in its map
+  popup (once, however many collections it's in). Without it (a frontispiece, a vignette), it shows
+  only on its collections' pages.
+- `page:` can be a number (`53`, `xii`) or a word (`frontispiece`, `facing p. 40`), shown as
+  written.
+- `also_in:` must name an existing file in `data/illustrations/`, or the check fails.
+- Images can be `.jpg`, `.png` or `.webp`, in `site/images/` or a subfolder of it.
 
 You can do all of this on github.com: open a folder, choose **Add file → Create new file**, paste,
 and **Commit changes**. Or work in any text editor and push.

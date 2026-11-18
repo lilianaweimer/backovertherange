@@ -104,7 +104,9 @@ function illustrationsFor(placeId) {
     illusByPlace = {};
     for (const c of DATA.illustrations)
       for (const it of c.items)
-        if (it.place) (illusByPlace[it.place] ||= []).push({ ...it, collection: c });
+        // An item tagged into other collections is listed there too; count it once, from its home file.
+        if (it.place && (it.home || c.id) === c.id)
+          (illusByPlace[it.place] ||= []).push({ ...it, collection: c });
   }
   return illusByPlace[placeId] || [];
 }
