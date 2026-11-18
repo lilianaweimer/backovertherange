@@ -2,7 +2,7 @@
 name: Greenland
 parent:
 region: [Colorado]
-lat: 39.1824913 
+lat: 39.1824913
 lon: -104.8552575
 coords_source: USGS GNIS 193187
 precision: approximate
