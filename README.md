@@ -217,6 +217,11 @@ items:
   written.
 - `also_in:` must name an existing file in `data/illustrations/`, or the check fails.
 - Images can be `.jpg`, `.png` or `.webp`, in `site/images/` or a subfolder of it.
+- Clicking a picture opens it large, with the arrows stepping through the others on that page. Each
+  one gets its own link, made from its file name
+  (`#/illustrations/wood-1889?view=garden-of-the-gods`), so renaming an image file changes its link.
+- `cover:` at the top of a collection's file is optional. It shows on the collection's card and,
+  small, beside its title. Without it, the card uses the first picture.
 
 You can do all of this on github.com: open a folder, choose **Add file → Create new file**, paste,
 and **Commit changes**. Or work in any text editor and push.
