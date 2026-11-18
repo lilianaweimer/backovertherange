@@ -12,7 +12,9 @@ intro: >
 # One block per illustration. Only title is required.
 # file:     image in site/images/
 # guide:    guide id from data/guides.yml
+# page:     a number (53, xii) or a word (frontispiece, facing p. 40)
 # place:    place id; the illustration then shows on that place and in its map popup
+#           leave place out for one that isn't of a place, like a frontispiece
 items: []
 #  - title: Garden of the Gods
 #    file: karst-garden-of-the-gods.jpg

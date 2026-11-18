@@ -192,6 +192,19 @@ To move a file on github.com, open it, click the pencil, and type the folder in 
 `data/illustrations/` (see the example in `karst.yml`). Give it a `place:` and it also shows on that
 place's page and in its map popup. A new collection is a new `.yml` file in the same folder.
 
+`place:` is optional. An illustration that isn't of one place (a frontispiece, a title-page
+vignette) just leaves it out and shows only on its collection's page; its `guide:` still links it
+from that book's page. `page:` can be a number (`53`, `xii`) or a word (`frontispiece`,
+`facing p. 40`), which is shown as written. Images can be `.jpg`, `.png` or `.webp`.
+
+```yaml
+  - title: Over the Range
+    file: over-the-range/frontispiece.webp
+    guide: wood-1889
+    page: frontispiece
+    material: wood
+```
+
 You can do all of this on github.com: open a folder, choose **Add file → Create new file**, paste,
 and **Commit changes**. Or work in any text editor and push.
 

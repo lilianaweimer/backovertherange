@@ -33,7 +33,13 @@ const label = (s) =>
   String(s)
     .replace(/-/g, " ")
     .replace(/^\w/, (c) => c.toUpperCase());
-const pageRef = (p) => (p ? (/[-–,]/.test(p) ? "pp. " : "p. ") + String(p).replace("-", "–") : "");
+// "p. 53", "pp. 53–54", "p. xii"; a word like "frontispiece" or "facing p. 40" is shown as written.
+const pageRef = (p) => {
+  if (!p) return "";
+  const s = String(p);
+  if (!/^(\d|[ivxlcdm]+\b)/i.test(s)) return s;
+  return (/[-–,]/.test(s) ? "pp. " : "p. ") + s.replace("-", "–");
+};
 const surname = (author) => String(author).trim().split(/\s+/).pop();
 const firstNum = (p) => parseInt(String(p), 10) || 0;
 const plural = (n, one, many = one + "s") => `${n} ${n === 1 ? one : many}`;
