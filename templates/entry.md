@@ -35,5 +35,3 @@ image:
 #   - "Population, 25,000."
 facts:
 ---
-
-The guide's own words go here. A blank line starts a new paragraph.
