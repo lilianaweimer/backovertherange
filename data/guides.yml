@@ -26,6 +26,7 @@
   kind: Railroad guide
   color: "#4B5632"
   covers: Colorado to Puget Sound
+  cover: covers/range-cover.jpg
   scan_url: "https://archive.org/details/overrangetogolde02wood/" # Internet Archive link
   hathitrust_url: "" # optional
   summary: >
@@ -44,6 +45,7 @@
   kind: Travelogue
   color: "#5A231D"
   covers: Colorado and the Rockies
+  cover: covers/crest-cover.jpg
   scan_url: "https://archive.org/details/crestofcontinent0000erne/"
   hathitrust_url: ""
   summary: >
