@@ -10,6 +10,7 @@ const NO_ENTRY_COLOR = "#FFFAEA";
 const FALLBACK_COLORS = ["#2F5DA8", "#9C6B1F", "#6B3F8F", "#2C7F86"]; // guides with no color set
 
 const STATUS_LABELS = {
+  extant: "Extant",
   thriving: "Thriving",
   transformed: "Transformed",
   renamed: "Renamed",
@@ -657,7 +658,7 @@ function guidePage(id) {
   return `
     ${crumbs(["Guides", "#/guides"], [g.kind, "#/guides"], [g.short_title])}
     <div class="guide-head">
-      <div class="cover">${dot(guideColor(g))}<span>${esc(g.kind)}</span></div>
+      ${g.cover ? `<img class="cover" src="${esc(g.cover)}" alt="Cover of ${esc(g.short_title)}">` : `<div class="cover">${dot(guideColor(g))}<span>${esc(g.kind)}</span></div>`}
       <div>
         <h1><i>${esc(g.short_title)}</i></h1>
         ${subtitle ? `<p class="subtitle">${esc(subtitle)}</p>` : ""}
@@ -751,7 +752,7 @@ function comparePage(params) {
       <section class="panel">
         <h2>These places today</h2>
         <dl class="glance">
-          <dt>Still there</dt><dd>${count(["thriving", "transformed", "declined"])}</dd>
+          <dt>Still there</dt><dd>${count(["extant", "thriving", "transformed", "declined"])}</dd>
           <dt>Renamed or absorbed</dt><dd>${count(["renamed", "absorbed"])}</dd>
           <dt>Ghost town or gone</dt><dd>${count(["ghost-town", "gone"])}</dd>
           <dt>Unknown</dt><dd>${count(["unknown"])}</dd>

@@ -13,7 +13,9 @@ data/
   site.yml                         tagline, scrolling marquee, contact email, visitor counter
   guides.yml                       one block per guide edition (wood-1889, ingersoll-1885, ...)
   places/lake-tahoe-ca.md          one file per real place: coordinates, today's status, your notes
+                                   (subfolders are fine, e.g. places/california/lake-tahoe-ca.md)
   entries/wood-1889/lake-tahoe-ca.md  one file per "this guide talks about this place": page + quote
+                                   (subfolders inside the guide's folder are fine too)
   illustrations/karst.yml          one file per illustration collection
 content/
   about.md                         the About page
@@ -61,6 +63,21 @@ the lines break in the file, not how the text reads on the site.
 **A new guide:** add a block to `data/guides.yml`. Give it a short id like `baedeker-1909`, then
 make a folder `data/entries/baedeker-1909/`.
 
+**A guide's cover:** upload a photo of the cover to `site/images/` (shrink it first, see "Image
+sizes" below), then add a `cover:` line to that guide's block with the file name:
+
+```
+- id: wood-1889
+  short_title: Over the Range to the Golden Gate
+  ...
+  color: "#4B5632"
+  cover: wood-1889-cover.jpg
+```
+
+It shows at the top of the guide's page, in place of the colored placeholder. Leave the line out and
+the placeholder stays. Any shape works; the frame fits the picture. The check fails if the file name
+doesn't match a file in `site/images/`.
+
 **A new place:** copy `templates/place.md` to `data/places/<place-id>.md`. The file name is the
 place's id. Use lowercase and dashes, and add the state so ids stay unique: `sisson-ca`, `lucin-ut`,
 `denver-co`.
@@ -84,8 +101,9 @@ place's id. Use lowercase and dashes, and add the state so ids stay unique: `sis
 - `coords_source`: where the coordinates came from, e.g. `USGS GNIS 1659136` (the GNIS feature ID)
   or `OpenStreetMap`. Shown on the place page.
 - `precision`: `exact`, `approximate` (shown with a dashed outline), or `unknown`.
-- `status`: `thriving`, `transformed`, `renamed`, `absorbed`, `declined`, `ghost-town`, `gone`, or
-  `unknown`.
+- `status`: `extant`, `thriving`, `transformed`, `renamed`, `absorbed`, `declined`, `ghost-town`,
+  `gone`, or `unknown`. Use `extant` when the place is still there and that's all you know (e.g.
+  Pikes Peak), without saying whether it's thriving or changed.
 - `category`: `town`, `depot`, `natural-feature`, `building`, `resort`, `mine`, `route`, or `other`.
 - `photos` (optional): your own photos. Upload them to `site/images/`, then list them:
   `photos: [{file: tahoe-2018.jpg, caption: "South shore, July 2018"}]`.
@@ -136,6 +154,38 @@ guide: [Squoosh](https://squoosh.app), about 1600px on the long side, JPEG quali
 safety net, the build also shrinks any JPEG or PNG bigger than 1600px in the published site; the
 copy in `site/images/` is left as it is.
 
+**Filing into folders (optional):** once there are lots of files, you can sort places and entries
+into subfolders however you like (by state, by route, by chapter). Folders are only for your own
+filing: nothing on the site changes, a place's id is still its file name, and region still comes
+from the `region:` line. Links like `parent: denver-co` and an entry's `place: denver-co` keep
+working wherever the files sit.
+
+```
+data/places/denver-co.md                         fine
+data/places/colorado/denver-co.md                also fine
+data/places/colorado/front-range/denver-co.md    also fine (any depth)
+
+data/entries/wood-1889/denver-co.md              fine
+data/entries/wood-1889/colorado/denver-co.md     also fine
+data/entries/wood-1889/chapter-03/denver-co.md   also fine
+```
+
+Two rules:
+
+- **The guide's folder comes first** for entries: `data/entries/<guide-id>/...`. Anything below it
+  is up to you, but the first folder must be the guide's id.
+- **Every place file needs its own name**, even in different folders.
+  `places/illinois/springfield.md` and `places/missouri/springfield.md` would clash, so name them
+  `springfield-il.md` and `springfield-mo.md`. The check stops with a message naming both files if
+  two share a name:
+
+```
+data/places/missouri/springfield.md: another place file has the same name: data/places/illinois/springfield.md. Each place file needs its own name, even in different folders. Rename one (e.g. springfield-il.md and springfield-mo.md).
+```
+
+To move a file on github.com, open it, click the pencil, and type the folder in front of the name
+(`colorado/` then the name); GitHub makes the folder for you. Moving a file keeps its "added" date.
+
 **Illustrations:** upload the image to `site/images/`, then add an item to the collection's file in
 `data/illustrations/` (see the example in `karst.yml`). Give it a `place:` and it also shows on that
 place's page and in its map popup. A new collection is a new `.yml` file in the same folder.
@@ -165,15 +215,15 @@ If it passes (green ✓), the site updates in a minute or two.
 
 ## Previewing on your own computer (optional)
 
-You need Python 3.
+You need Python 3. Type `python3`, not `python` (on a Mac, `python` can be the old Python 2).
 
 ```
-pip install -r requirements.txt
-python scripts/build.py
-python -m http.server -d dist 8000
+python3 -m pip install -r requirements.txt
+python3 scripts/build.py
+python3 -m http.server -d dist 8000
 ```
 
-Then open http://localhost:8000. Run `python scripts/build.py --check` to check without building.
+Then open http://localhost:8000. Run `python3 scripts/build.py --check` to check without building.
 
 ## Publishing: one-time setup
 

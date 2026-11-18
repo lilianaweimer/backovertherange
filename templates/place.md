@@ -1,4 +1,5 @@
 ---
+# Copy this file to data/places/<place-id>.md (a subfolder is fine, e.g. data/places/colorado/<place-id>.md)
 # The file name (without .md) is the place id, e.g. data/places/sisson-ca.md -> sisson-ca
 
 # Today's name, e.g. Mount Shasta
@@ -24,7 +25,7 @@ precision: exact
 # town | depot | natural-feature | building | resort | mine | route | other
 category: town
 
-# thriving | transformed | renamed | absorbed | declined | ghost-town | gone | unknown
+# extant | thriving | transformed | renamed | absorbed | declined | ghost-town | gone | unknown
 status: unknown
 
 # One line for the popup, e.g. "Renamed Mount Shasta in 1922."
