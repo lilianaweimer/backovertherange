@@ -2,9 +2,9 @@
 name: Greenland
 parent:
 region: [Colorado]
-lat: 39.283
-lon: -104.89
-coords_source: USGS Castle Rock 1:62,500 topo, 1898
+lat: 39.1824913 
+lon: -104.8552575
+coords_source: USGS GNIS 193187
 precision: approximate
 category: depot
 status: unknown
