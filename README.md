@@ -30,8 +30,9 @@ templates/
 ```
 
 A place can have entries from many guides. Denver, for example, can have
-`entries/wood-1889/denver-co.md` and `entries/ingersoll-1885/denver-co.md`; both show up together on
-Denver's page.
+`entries/wood-1889/01-missouri-river-to-denver/denver-co.md` and
+`entries/ingersoll-1885/denver-co.md`; both show up together on Denver's page. Subfolders are up to
+you; the build only cares about the `place:` field and which guide folder a file sits in.
 
 ## Editing the site's words
 

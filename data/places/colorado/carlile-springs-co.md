@@ -1,6 +1,7 @@
 ---
 name: Carlile Springs
-region: Colorado
+parent:
+region: [Colorado]
 lat: 38.33
 lon: -104.90
 coords_source:
@@ -10,8 +11,10 @@ category: resort
 status: gone
 status_summary:
   "Unimproved springs on the Arkansas; later a railroad stop called Carlisle (1909–23)."
+visited:
 former_names: [Carlisle Springs, Carlisle]
 read_more:
   - "[Pueblo County Towns](https://www.kmitch.com/Pueblo/towns.html)"
 tags: [water, health]
+photos: []
 ---

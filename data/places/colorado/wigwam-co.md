@@ -1,5 +1,5 @@
 ---
-name: Buttes
+name: Wigwam
 parent:
 region: [Colorado]
 lat: 38.5394433
