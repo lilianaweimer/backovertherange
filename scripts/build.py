@@ -10,7 +10,7 @@ Reads:
     data/guides.yml
     data/places/<place-id>.md                 (subfolders allowed, e.g. places/colorado/denver-co.md)
     data/entries/<guide-id>/<place-id>.md     (subfolders allowed inside the guide's folder)
-    data/illustrations/<collection-id>.yml
+    data/illustrations/<collection-id>.yml   (one per book or collection; items can be in several via also_in)
 Writes:
     dist/                 a copy of site/ plus...
     dist/data.json        every guide, place and entry, ready for the map
@@ -504,6 +504,8 @@ def last_updated():
 
 
 def load_illustrations(guides, places):
+    """One file per collection. An item is listed once, in its home file (usually its book's),
+    and can be gathered into other collections with also_in: [karst, moran]."""
     collections = []
     folder = DATA / "illustrations"
     for path in sorted(folder.glob("*.yml")) if folder.exists() else []:
@@ -520,12 +522,17 @@ def load_illustrations(guides, places):
             continue
         if not plain(raw.get("title")):
             problem(path, "'title' is missing.")
+        # A book's file can name its guide once at the top instead of on every item.
+        default_guide = plain(raw.get("guide"))
+        if default_guide and default_guide not in guides:
+            problem(path, f"guide '{default_guide}' is not in data/guides.yml.")
+            default_guide = ""
         items = []
         for i, it in enumerate(raw.get("items") or [], start=1):
             if not isinstance(it, dict) or not plain(it.get("title")):
                 problem(path, f"item #{i} needs at least a 'title:'.")
                 continue
-            gid, pid = plain(it.get("guide")), plain(it.get("place"))
+            gid, pid = plain(it.get("guide")) or default_guide, plain(it.get("place"))
             if gid and gid not in guides:
                 problem(path, f"item '{plain(it.get('title'))}': guide '{gid}' is not in data/guides.yml.")
                 gid = ""
@@ -540,6 +547,8 @@ def load_illustrations(guides, places):
                 "place": pid,
                 "material": plain(it.get("material")),
                 "artist": plain(it.get("artist")),
+                "home": cid,
+                "also_in": [c for c in as_list(it.get("also_in")) if c != cid],
             })
         collections.append({
             "id": cid,
@@ -549,7 +558,22 @@ def load_illustrations(guides, places):
             "intro_html": to_html(plain(raw.get("intro"))),
             "cover": check_image(path, raw.get("cover")),
             "items": items,
+            "_path": path,
         })
+
+    # Gather tagged items into the other collections they name, after that collection's own items.
+    by_id = {c["id"]: c for c in collections}
+    for c in collections:
+        for it in [it for it in c["items"] if it["home"] == c["id"]]:
+            for other in it["also_in"]:
+                if other not in by_id:
+                    problem(c["_path"], f"item '{it['title']}': also_in '{other}' has no file in data/illustrations/ "
+                                        f"(make data/illustrations/{other}.yml, or check the spelling).")
+                    continue
+                if not any(x is it for x in by_id[other]["items"]):
+                    by_id[other]["items"].append(it)
+    for c in collections:
+        del c["_path"]
     return collections
 
 
