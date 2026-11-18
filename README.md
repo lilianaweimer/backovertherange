@@ -12,10 +12,11 @@ them and builds the map, and GitHub publishes it automatically.
 data/
   site.yml                         tagline, scrolling marquee, contact email, visitor counter
   guides.yml                       one block per guide edition (wood-1889, ingersoll-1885, ...)
-  places/lake-tahoe-ca.md          one file per real place: coordinates, today's status, your notes
-                                   (subfolders are fine, e.g. places/california/lake-tahoe-ca.md)
-  entries/wood-1889/lake-tahoe-ca.md  one file per "this guide talks about this place": page + quote
-                                   (subfolders inside the guide's folder are fine too)
+  places/colorado/denver-co.md     one file per real place: coordinates, today's status, your notes
+                                   (filed by state; multi-state features go in places/regions/)
+  entries/wood-1889/02-denver-to-pueblo/denver-co.md
+                                   one file per "this guide talks about this place": page + quote
+                                   (filed by guide, then by the guide's chapter)
   illustrations/karst.yml          one file per illustration collection
 content/
   about.md                         the About page
@@ -29,8 +30,9 @@ templates/
 ```
 
 A place can have entries from many guides. Denver, for example, can have
-`entries/wood-1889/denver-co.md` and `entries/ingersoll-1885/denver-co.md`; both show up together on
-Denver's page.
+`entries/wood-1889/01-missouri-river-to-denver/denver-co.md` and
+`entries/ingersoll-1885/denver-co.md`; both show up together on Denver's page. Subfolders are up to
+you; the build only cares about the `place:` field and which guide folder a file sits in.
 
 ## Editing the site's words
 
@@ -56,8 +58,7 @@ npm run format:check  # only report
 ```
 
 Long paragraphs, including transcribed quotes, are rewrapped at 100 columns; that only changes where
-the lines break in the file, not how the text reads on the site. The starter files in `templates/`
-are left alone to keep their aligned comments.
+the lines break in the file, not how the text reads on the site.
 
 ## Adding data
 
