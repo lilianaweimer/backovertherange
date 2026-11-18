@@ -48,5 +48,3 @@ tags: []
 # Your own photos, in site/images/, e.g. [{file: tahoe-2018.jpg, caption: "South shore, July 2018"}]
 photos: []
 ---
-
-Your notes on what this place is like today. Markdown works.
